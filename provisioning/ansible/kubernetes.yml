@@ -1,0 +1,22 @@
+---
+- hosts: kubernetes_master
+  become: yes
+  roles:
+    - common
+#    - prometheus
+#    - elk
+    - docker
+    - kubernetes
+  tags:
+    kubernetes_master
+
+- hosts: kubernetes_nodes
+  become: yes
+  roles:
+    - common
+#    - node-exporter
+#    - cadvisor
+#    - elk
+    - docker
+    - kubernetes
+  tags: kubernetes_nodes

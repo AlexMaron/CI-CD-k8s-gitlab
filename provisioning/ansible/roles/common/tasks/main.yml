@@ -1,0 +1,6 @@
+---
+# tasks file for common
+- include: upgrade_packages.yml
+#- include: install_tools.yml
+#- include: system_configuration.yml
+

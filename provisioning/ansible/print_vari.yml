@@ -1,0 +1,10 @@
+#!/usr/bin/ansible-playbook
+
+- name: Usage of debug module
+  hosts: all
+  tasks:
+    - name:  printing a variable value using debug module
+      debug:
+#        msg:
+#        - "The host name is: {{inventory_hostname}}"
+        var: inventory_hostname
