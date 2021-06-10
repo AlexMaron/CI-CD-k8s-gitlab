@@ -6,7 +6,7 @@
 #    - prometheus
 #    - elk
     - docker
-    - kubernetes
+    - kubernetes_master
   tags:
     kubernetes_master
 
