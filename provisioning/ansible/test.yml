@@ -1,23 +1,14 @@
 ---
 - hosts: 10.8.8.11
   become: yes
-  vars:
-    password: "13011988"
   tasks:
-  - name: create user k8s
-    user:
-      state: present
-      name: k8s
-      password: "{{ password | password_hash('sha512') }}"
-      shell: /bin/bash
-      create_home: yes
-      group: adm
+  - name: first
+    sysctl:
+      name: "{{ item.name }}"
+      value: "{{ item.value }}"
+      sysctl_file: ./test.conf
+      reload: yes
+      with_items:
+      - { name: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }
+      - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }
 
-  - name: create file in home k8s user directory
-    file:
-      state: touch
-      path: "{{ ansible_env.HOME }}/test.file"
-    sudo_user: k8s
-    register: create_file
-
-  - debug: var=create_file
