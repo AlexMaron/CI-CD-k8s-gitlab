@@ -39,17 +39,24 @@ Vagrant.configure("2") do |config|
       end
     end
   end
-  
+
+   config.vm.provision "file", source: "ssh_key/id_rsa", destination: "/home/vagrant/.ssh/"
+  config.vm.provision "file", source: "ssh_key/id_rsa.pub", destination: "/home/vagrant/.ssh/"
+
+ 
   config.vm.provision "shell",
     inline: "set -x && \
-             cat /vagrant/ssh_key/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys 
+             sed -i 's/^#.*StrictHostKeyChecking ask/    StrictHostKeyChecking no/' /etc/ssh/ssh_config && \
+             if [[ $(grep 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDGQz' /home/vagrant/.ssh/authorized_keys | wc -l) -eq 0 ]]; then cat /vagrant/ssh_key/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys; fi && \
+             chmod 644 /home/vagrant/.ssh/id_rsa.pub && \
+             chmod 600 /home/vagrant/.ssh/id_rsa
              "
-
-  config.vm.provision "file", source: "ssh_key/id_rsa", destination: "/home/vagrant/.ssh/"
-  config.vm.provision "file", source: "ssh_key/id_rsa.pub", destination: "/home/vagrant/.ssh/"
 
   config.vm.define "node-1" do |node1|
     node1.vm.provision "shell",
-      inline: "apt install ansible -y"
+      inline: "apt install ansible -y && \
+               cp -r /vagrant/provisioning/ansible /home/vagrant/ && \
+               chmod o-w /home/vagrant/ansible
+              "
   end
 end
