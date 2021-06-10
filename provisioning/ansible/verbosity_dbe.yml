@@ -1,0 +1,11 @@
+---
+- name: usage of verbosity of debug module
+  hosts: all
+  tasks:
+    - name: verbosity as default
+      debug:
+        msg: "this is default msg"
+    - name: verbosity is 2
+      debug:
+        msg: "Verbosity is 2"
+        verbosity: 2

@@ -1,0 +1,42 @@
+---
+- hosts: all
+  become: yes
+  vars:
+    x: 45
+    my_name: "AlexMaron"
+  vars_prompt:
+    - name: user_name
+      prompt: Enter your user name
+      private: no
+    - name: password
+      prompt: password
+  gather_facts: false
+
+  tasks:
+  - name: display debug message
+    debug:
+      msg:
+        - "The username is: {{user_name}} and password is: {{password}}"
+    tags:
+    - debug
+  
+  - name: add linux user
+    user:
+      state: present
+      name: "{{user_name}}"
+      password: "{{ password | password_hash('sha512') }}"
+      shell: /bin/bash
+      create_home: yes
+      group: adm
+    tags: 
+    - useradd
+
+  - name: delete linux user
+    user:
+      state: absent
+      name: "{{user_name}}"
+      force: yes
+      remove: yes
+    tags: 
+    - userdel
+

@@ -1,0 +1,15 @@
+- name: creating directory for weave password
+  path: /var/lib/weave
+  state: directory
+
+- name: generate password for weave
+  set_fact:
+    weave_pwd: "{{ lookup('password', '/dev/null length=30 chars=ascii_letters') }}"
+
+- name: creating file witch containing weave password
+  lineinfile:
+    path: /var/lib/weave/weave.passwd
+    state: present
+    create: yes
+    line: "{{ weave_pwd }}"
+    

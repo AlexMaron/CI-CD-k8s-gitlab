@@ -1,0 +1,13 @@
+---
+- hosts: 10.8.8.11
+  become: yes
+  tasks:
+  - name: generate password for weave
+    set_fact:
+      weave_pwd: "{{ lookup('password', '/dev/null length=30 chars=ascii_letter') }}"
+  - name: creating structure of directory and one file
+    lineinfile:
+      state: present
+      path: /vagrant/path_new/another_layer/new.file
+      create: yes
+      line: "{{ weave_pwd }}"

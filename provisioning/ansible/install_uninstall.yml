@@ -1,0 +1,10 @@
+---
+- name: This is a simple play to understand command line arguments
+  hosts: all
+  become: yes
+  gather_facts: false
+  tasks:
+  - name: working with {{pkg}}
+    apt:
+      name: "{{pkg}}"
+      state: "{{req_state}}"
