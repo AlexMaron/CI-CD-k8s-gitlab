@@ -1,0 +1,43 @@
+- name: Configure node ip
+  lineinfile:
+    path: /etc/default/kubelet
+    line: KUBELET_EXTRA_ARGS=--node-ip={{ inventory_hostname }}
+
+- name: Restart kubelet
+  service:
+    name: kubelet
+    daemon_reload: yes
+    state: restarted
+
+- name:
+  command: "kubeadm init --apiserver-advertise-address=10.8.8.11 --api-cert-extra-sans=10.8.8.11 --node-name k8s-master --pod-network-cidr=10.8.8.0/24 --kubernetes-version stable-1.21"
+
+  #- name: creating kubernetes user
+  #user:
+  #  name: k8s
+  #  state: present
+  #  password: "{{ password | password_hash('sha512') }}"
+  #  shell: /bin/bash
+  #  create_home: yes
+  #  group: adm
+  #  register: user_info
+
+- name: preparing starting cluster
+  command: "{{ item }}"
+  with_items:
+  - mkdir -p /home/vagrant/.kube
+  - cp -i /etc/kubernetes/admin.conf {{ ansible_env.HOME }}/.kube/config
+  - chown {{ ansible_user_uid }}:{{ ansible_user_gid }} {{ ansible_env.HOME }}/.kube/config
+
+- name: modify .bashrc
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    line: "export KUBECONFIG={{ ansible_env.HOME }}/.kube/config"
+
+- name: Generate join command
+  command: kubeadm token create --print-join-command
+  register: join_command
+
+- name: Copy join command to lacal file
+  lacal_action: copy content="{{ join_command.stdout_lines[0} }}" dest="./join-command"
+
