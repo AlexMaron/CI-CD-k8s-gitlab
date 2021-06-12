@@ -2,13 +2,24 @@
 - hosts: 10.8.8.11
   become: yes
   tasks:
-  - name: first
-    sysctl:
-      name: "{{ item.name }}"
-      value: "{{ item.value }}"
-      sysctl_file: ./test.conf
-      reload: yes
-      with_items:
-      - { name: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }
-      - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }
+  - name: creating user
+    user:
+      name: test_user
+      state: present
+      shell: /bin/bash
+    register: create_user
+  
+  - name: user_info
+    debug:
+      var: create_user
+    
+  - name: display user name \#1
+    debug:
+      msg: "This is {{ ansible_user_id}} "
 
+- hosts: 10.8.8.11
+  tasks:
+  - name: display user name \#2
+    debug:
+      msg: "This is {{ create_user.name }}"
+  become_user: test_user

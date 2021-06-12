@@ -27,15 +27,15 @@
     state: present
     path: /etc/modules-load.d/k8s.conf
     line: "{{ item }}"
-  with_item:
+  with_items:
     - br_netfilter
 
 - name: add br_netfilter to k8s.conf (2/2)
-    sysctl:
-      name: "{{ item.name }}"
-      value: "{{ item.value }}"
-      sysctl_file: /etc/sysctl.d/k8s.conf
-      reload: yes
-    with_item:
-      - { name: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }
-      - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/k8s.conf
+    reload: yes
+  with_items:
+    - { name: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }
+    - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }

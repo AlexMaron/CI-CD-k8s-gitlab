@@ -54,9 +54,14 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "node-1" do |node1|
     node1.vm.provision "shell",
-      inline: "apt install ansible -y && \
+      inline: "apt install pip3 -y && \
+               curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+               python3 get-pip.py --force-reinstall && \
+               rm get-pip.py && \
+               pip3 install ansible && \
                cp -r /vagrant/provisioning/ansible /home/vagrant/ && \
-               chmod o-w /home/vagrant/ansible
+               chmod o-w /home/vagrant/ansible && \
+               chown -R vagrant:vagrant /home/vagrant/ansible
               "
   end
 end

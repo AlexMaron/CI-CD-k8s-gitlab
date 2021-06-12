@@ -1,5 +1,6 @@
 ---
 # tasks file for common
+- include: k8suseradd.yml
 - include: upgrade_packages.yml
 #- include: install_tools.yml
 #- include: system_configuration.yml

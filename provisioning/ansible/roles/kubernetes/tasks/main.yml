@@ -1,6 +1,5 @@
 ---
 # tasks file for kubernetes
-- include: install_kubernetes.yml
-- include: confiture_system.yml
-- include: configure_kubernetes.yml
-- include: apply_weavenet.yml
+- include: 0-install_kubernetes.yml
+- include: 1-configure_system.yml
+- include: 2-configure_kubernetes.yml

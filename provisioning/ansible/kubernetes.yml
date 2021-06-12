@@ -3,15 +3,17 @@
   become: yes
   roles:
     - common
+- hosts: kubernetes_master
 #    - prometheus
 #    - elk
+  roles:
     - docker
     - kubernetes_master
+  become_user: k8s
   tags:
-    kubernetes_master
+  - kubernetes_master
 
 - hosts: kubernetes_nodes
-  become: yes
   roles:
     - common
 #    - node-exporter
@@ -19,4 +21,6 @@
 #    - elk
     - docker
     - kubernetes
-  tags: kubernetes_nodes
+  tags: 
+  - kubernetes_nodes
+  become_user: k8s
