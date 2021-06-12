@@ -1,0 +1,28 @@
+- name: adding admin group
+  group:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - admin
+  - docker
+
+- name: adding k8s user NOPASSWD in sudoers file
+  lineinfile:
+    path: /etc/sudoers
+    regexp: '^%admin'
+    state: present
+    line: '%admin ALL=(ALL) NOPASSWD: ALL'
+
+- name: generate password value
+  set_fact:
+    pwd_alias: "{{ lookup('password', '/dev/null length=30 chars=ascii_letters') }}"
+
+- name: creating kubernetes user
+  user:
+    name: k8s
+    state: present
+    password: "{{ pwd_alias | password_hash('sha512') }}"
+    shell: /bin/bash
+    create_home: yes
+    groups: admin,docker 
+    register: user_info

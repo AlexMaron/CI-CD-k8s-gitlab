@@ -1,13 +1,27 @@
 ---
 - hosts: 10.8.8.11
   become: yes
+  vars:
+    lacp_groups:
+      - master: lacp0
+        network: 10.65.100.0/24
+        gateway: 10.65.100.1
+        dns4:
+          - 10.65.100.10
+          - 10.65.100.11
+        interfaces:
+          - em1
+          - em2
+
+      - master: lacp1
+        network: 10.65.120.0/24
+        gateway: 10.65.120.1
+        dns4:
+          - 10.65.100.10
+          - 10.65.100.11
+        interfaces:
+          - em3
+          - em4
   tasks:
-  - name: generate password for weave
-    set_fact:
-      weave_pwd: "{{ lookup('password', '/dev/null length=30 chars=ascii_letter') }}"
-  - name: creating structure of directory and one file
-    lineinfile:
-      state: present
-      path: /vagrant/path_new/another_layer/new.file
-      create: yes
-      line: "{{ weave_pwd }}"
+  - debug:
+      msg: "{{ (lacp_groups|selectattr('interfaces', 'contains', 'em1')|first).master }}"
