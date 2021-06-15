@@ -1,18 +1,25 @@
 - name: Disable SWAP since kubernetes can't work with swap enabled (1/2)
   shell:
     swapoff -a
-  when: kubernetes_installed is changed
+    #  when: kubernetes_installed is changed
 
-- name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
+- name: Disable SWAP in fstab (2/2)
   replace:
     path: /etc/fstab
-    regexp: '^([^#].*?\sswap\s+sw\s+.*)&'
-    replace: '# \1'
-  when: kubernetes_installed is changed
+    backup: yes
+    regexp: '^.*swap.*sw.*0.*0'
+    replace: '# swapoff'
+    #  when: kubernetes_installed is changed
 
 - name: check br_netfilter
   shell: 
     cmd: lsmod | grep br_netfilter
+  ignore_errors: yes
+  register: exit_code
+
+- name: check br_netfilter
+  shell: 
+    cmd: lsmod | grep overlay
   ignore_errors: yes
   register: exit_code
 

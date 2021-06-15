@@ -3,12 +3,15 @@
 
 Vagrant.configure("2") do |config|
 
+  
+  k8s_port = '6443'
+
   servers=[
     {
       :hostname => "node-1",
       :box => "bento/ubuntu-18.04",
       :ip => "10.8.8.11",
-      :ssh_port => '2211'
+      :ssh_port => '2211',
     },
     {
       :hostname => "node-2",
@@ -63,5 +66,8 @@ Vagrant.configure("2") do |config|
                chmod o-w /home/vagrant/ansible && \
                chown -R vagrant:vagrant /home/vagrant/ansible
               "
+  end
+  config.vm.define "node-1" do |k8sforward|
+    k8sforward.vm.network "forwarded_port", guest: k8s_port, host: k8s_port
   end
 end

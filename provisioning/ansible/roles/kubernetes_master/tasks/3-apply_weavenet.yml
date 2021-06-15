@@ -13,6 +13,12 @@
     state: present
     create: yes
     path: /var/lib/weave/weave.passwd
+
+- name: create secret
+  become: false
+  command: "kubectl create secret -n kube-system generic weave-passwd --from-file=/var/lib/weave/weave.passwd"
     
 - name: apply weavenet
-  command: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&password-secret=weave-passwd&env.IPALLOC_RANGE=192.168.0.0/24"
+  become: false
+  #command: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&password-secret=weave-passwd&env.IPALLOC_RANGE=192.168.0.0/24"
+  command: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version={{ kubernetes_version }}&password-secret=weave-passwd&env.IPALLOC_RANGE=192.168.0.0/24"
