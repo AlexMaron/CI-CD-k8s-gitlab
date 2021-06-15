@@ -2,24 +2,9 @@
 - hosts: 10.8.8.11
   become: yes
   tasks:
-  - name: creating user
-    user:
-      name: test_user
-      state: present
-      shell: /bin/bash
-    register: create_user
-  
-  - name: user_info
-    debug:
-      var: create_user
-    
-  - name: display user name \#1
-    debug:
-      msg: "This is {{ ansible_user_id}} "
-
-- hosts: 10.8.8.11
-  tasks:
-  - name: display user name \#2
-    debug:
-      msg: "This is {{ create_user.name }}"
-  become_user: test_user
+  - name: Disable SWAP in fstab
+    lineinfile:
+      path: /etc/fstab
+      backup: yes
+      regexp: '^.*swap.*sw.*0.*0'
+      line: '\1 test'
