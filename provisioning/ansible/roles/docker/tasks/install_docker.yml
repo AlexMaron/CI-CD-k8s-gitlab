@@ -42,17 +42,22 @@
 
 - name: creating docker group
   group:
-    name: docker
+    name: "{{ item }}"
     state: present
+  with_items:
+  - admin
+  - docker
   tags: docker_install
   
 - name: Add vagrant user to docker group
   user:
     name: vagrant
-    groups: docker
+    groups: "{{ item }}"
+  with_items:
+  - admin
+  - docker
   tags: docker_install
 
-#####################################
 - name: install docker
   apt: name={{ item }} state=latest
   with_items:
@@ -60,13 +65,29 @@
     - docker-ce-cli
     - containerd.io
   tags: docker_install
+  ignore_errors: yes
+
+- name: fix bug then docker service crash on first startup. 
+  replace:
+    path: /lib/systemd/system/docker.service
+    regexp: '^ExacStart=.*'
+    replace: 'ExecStart=/usr/bin/dockerd -H unix:// --containerd=/run/containerd/conta
+    inerd.sock'
  
-- name: remove docker
-  apt:
-    name: "{{ item }}"
-    state: absent
-  with_items:
-  - docker-ce
-  - docker-ce-cli
-  - containerd-io
-  tags: delete_docker
+- name: change docker runtime
+  shell: |
+    cat > /etc/docker/daemon.json <<EOF
+    {
+      "exec-opts": ["native.cgroupdriver=systemd"],
+      "log-driver": "json-file",
+      "log-opts": {
+        "max-size": "100m"
+      },
+      "storage-driver": "overlay2"
+    }
+    EOF
+    mkdir -p /etc/systemd/system/docker.service.d
+    systemctl daemon-reload
+    systemctl restart docker
+  args:
+    executable: /bin/bash

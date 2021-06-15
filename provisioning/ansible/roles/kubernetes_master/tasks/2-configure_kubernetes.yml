@@ -17,21 +17,21 @@
   command: "kubeadm init --apiserver-advertise-address=10.8.8.11 --apiserver-cert-extra-sans=10.8.8.11 --node-name node-1 --pod-network-cidr=10.8.8.0/24 --kubernetes-version stable-1.21"
 
 - name: preparing starting cluster
-  become: false
   command: "{{ item }}"
   with_items:
   - mkdir -p /home/vagrant/.kube
-  - cp -i /etc/kubernetes/admin.conf {{ user_info.home }}/.kube/config
-  - chown {{ user_info.uid }}:{{ ansible_user_gid }} {{ user_info.home }}/.kube/config
+  - cp -i /etc/kubernetes/admin.conf /home/{{ username_env }}/.kube/config
+  - chown {{ username_uid }}:{{ username_gid }} /home/{{ username_env }}/.kube/config
+
 
 - name: modify .bashrc
   lineinfile:
-    path: "{{ user_info.home }}/.bashrc"
-    line: "export KUBECONFIG={{ user_info.home }}/.kube/config"
+    path: "/home/{{ username_env }}/.bashrc"
+    line: "export KUBECONFIG=/home/{{ username_env }}/.kube/config"
 
 - name: Generate join command
   command: kubeadm token create --print-join-command
   register: join_command
 
 - name: Copy join command to local file
-  local_action: copy content="{{ join_command.stdout_lines[0} }}" dest="./join-command"
+  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
