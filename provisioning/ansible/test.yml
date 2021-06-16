@@ -1,10 +1,15 @@
 ---
-- hosts: 10.8.8.11
+- hosts: kubernetes_master
   become: yes
   tasks:
-  - name: Disable SWAP in fstab
-    lineinfile:
-      path: /etc/fstab
-      backup: yes
-      regexp: '^.*swap.*sw.*0.*0'
-      line: '\1 test'
+  - name:
+    shell:
+      cmd: kubectl version --client --short | grep -o '[0-9.]\+' | sed 's/..$//'
+    register: kubernetes_version
+
+  - name: set fact kubernetes version 
+    set_fact:
+      k8s_version: "{{ kubernetes_version.stdout }}"
+
+  - debug:
+      var: kubernetes_version.stdout

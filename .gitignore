@@ -1,3 +1,5 @@
 ssh_key/id_rsa
 .vagrant
 *~
+provisioning/ansible/k8s_passwd
+provisioning/ansible/join-command

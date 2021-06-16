@@ -1,6 +1,5 @@
 ---
 # vars file for kubernetes_master
-kubernetes_version: 1.21.1
 username_env: vagrant
 username_uid: vagrant
 username_gid: docker
