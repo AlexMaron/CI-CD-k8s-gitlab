@@ -1,0 +1,20 @@
+---
+- hosts: 10.8.8.11
+  become: yes
+  vars:
+    jsonVar: "{{ lookup('file', 'version.kubectl.json') | from_json }}"
+  tasks:
+  - name: test loop
+    debug:
+      var: jsonVar.serverVersion.gitVersion
+    #debug: 
+    #  var: jsonVar.serverVersion.gitVersion
+    #register: k8s_version
+
+      - name: echo version
+    shell: 
+      cmd: echo "{{ jsonVar.serverVersion.gitVersion }}" | tr -d '[a-zA-Z]'
+    register: k8s_ver
+
+    #- debug:
+    #  var: k8s_ver.stdout
