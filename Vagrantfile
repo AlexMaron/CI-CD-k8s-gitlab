@@ -50,7 +50,6 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell",
     inline: "set -x && \
              sed -i 's/^#.*StrictHostKeyChecking ask/    StrictHostKeyChecking no/' /etc/ssh/ssh_config && \
-             if [[ ! -e /vagrant/ssh_key/id_rsa ]]; then ssh-keygen -b 2048 -t rsa -f /vagrant/ssh_key/id_rsa -q -N ""; fi && \ 
              if [[ $(cat /vagrant/ssh_key/id_rsa.pub | xargs -I {} grep {} ~/.ssh/authorized_keys | wc -l) -eq 0 ]]; then cat /vagrant/ssh_key/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys; fi && \
              chmod 644 /home/vagrant/.ssh/id_rsa.pub && \
              chmod 600 /home/vagrant/.ssh/id_rsa
@@ -66,10 +65,9 @@ Vagrant.configure("2") do |config|
                pip3 install ansible && \
                cp -r /vagrant/provisioning/ansible /home/vagrant/ && \
                chmod o-w /home/vagrant/ansible && \
-               chown -R vagrant:vagrant /home/vagrant/ansible
+               chown -R vagrant:vagrant /home/vagrant/ansible && \
+               if [[ ! -e /vagrant/ssh_key/id_rsa ]]; then ssh-keygen -b 2048 -t rsa -f /vagrant/ssh_key/id_rsa -q -N ""; fi 
               "
-  end
-  config.vm.define "node-1" do |k8sforward|
-    k8sforward.vm.network "forwarded_port", guest: k8s_port, host: k8s_port
+    node1.vm.network "forwarded_port", guest: k8s_port, host: k8s_port
   end
 end
