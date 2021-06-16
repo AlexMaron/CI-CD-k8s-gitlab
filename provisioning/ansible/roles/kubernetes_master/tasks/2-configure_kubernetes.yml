@@ -13,8 +13,13 @@
 - name: kubeadm reset
   shell: yes | kubeadm reset
   
-- name: kubertenes initialize
-  command: "kubeadm init --apiserver-advertise-address=10.8.8.11 --apiserver-cert-extra-sans=10.8.8.11 --node-name node-1 --pod-network-cidr=10.8.8.0/24 --kubernetes-version stable-1.21"
+- name: get kubernetes version
+  shell:
+    cmd: kubectl version --clien --short | tr -cd '[0-9.]'
+  register: kubernetes_version
+
+- name: kubernetes initialize
+  command: "kubeadm init --apiserver-advertise-address=10.8.8.11 --apiserver-cert-extra-sans=10.8.8.11 --node-name node-1 --pod-network-cidr=10.8.8.0/24 --kubernetes-version stable-{{ kubernetes_version }}"
 
 - name: preparing starting cluster
   command: "{{ item }}"

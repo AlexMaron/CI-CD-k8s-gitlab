@@ -50,14 +50,16 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell",
     inline: "set -x && \
              sed -i 's/^#.*StrictHostKeyChecking ask/    StrictHostKeyChecking no/' /etc/ssh/ssh_config && \
-             if [[ $(grep 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDGQz' /home/vagrant/.ssh/authorized_keys | wc -l) -eq 0 ]]; then cat /vagrant/ssh_key/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys; fi && \
+             if [[ ! -e /vagrant/ssh_key/id_rsa ]]; then ssh-keygen -b 2048 -t rsa -f /vagrant/ssh_key/id_rsa -q -N ""; fi && \ 
+             if [[ $(cat /vagrant/ssh_key/id_rsa.pub | xargs -I {} grep {} ~/.ssh/authorized_keys | wc -l) -eq 0 ]]; then cat /vagrant/ssh_key/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys; fi && \
              chmod 644 /home/vagrant/.ssh/id_rsa.pub && \
              chmod 600 /home/vagrant/.ssh/id_rsa
              "
 
   config.vm.define "node-1" do |node1|
     node1.vm.provision "shell",
-      inline: "apt install pip3 -y && \
+      inline: "apt update && apt upgrade -y && \
+               apt install linux-headers-$(uname -r) python3-pip -y && \
                curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
                python3 get-pip.py --force-reinstall && \
                rm get-pip.py && \
