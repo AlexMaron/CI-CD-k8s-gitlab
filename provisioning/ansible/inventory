@@ -1,10 +1,13 @@
+[kubernetes_master]
+10.8.8.11
+
 [kubernetes_nodes]
 10.8.8.12
 10.8.8.13
 
-[kubernetes_master]
-10.8.8.11
+[gitlab]
+10.8.8.14
 
-[vagrant:children]
+[kubernetes:children]
 kubernetes_nodes
 kubernetes_master

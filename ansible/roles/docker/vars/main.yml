@@ -1,0 +1,6 @@
+---
+# vars file for common
+docker_release: stable
+k8s_groups:
+- admin
+- docker
