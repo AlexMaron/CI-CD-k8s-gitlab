@@ -1,0 +1,7 @@
+---
+# tasks file for gitlab_omnibus
+- include: preparing.yml
+  tags: gitlab_preparing
+- include: install.yml
+  tags: gitlab_install
+  #- include: configure.yml

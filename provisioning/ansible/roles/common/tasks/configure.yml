@@ -13,3 +13,4 @@
   - gnupg
   - lsb-release
   - jq
+  tags: common_install

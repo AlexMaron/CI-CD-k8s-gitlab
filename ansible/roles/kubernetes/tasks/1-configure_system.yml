@@ -1,0 +1,41 @@
+- name: Disable SWAP since kubernetes can't work with swap enabled (1/2)
+  shell:
+    swapoff -a
+  when: kubernetes_installed is changed
+
+- name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+sw\s+.*)&'
+    replace: '# \1'
+  when: kubernetes_installed is changed
+
+  #- name: check br_netfilter
+  #shell: 
+  #  cmd: lsmod | grep br_netfilter
+  #ignore_errors: yes
+  #register: exit_code
+  #
+  #- name: enabled br_netfilter
+  #modprobe:
+  #  name: br_netfilter
+  #  state: present
+  #when: exit_code.rc == 1
+
+  #- name: add br_netfilter to k8s.conf (1/2)
+  # lineinfile:
+  #  state: present
+  #  path: /etc/modules-load.d/k8s.conf
+  #  line: "{{ item }}"
+  #with_items:
+  #  - br_netfilter
+
+  #- name: add br_netfilter to k8s.conf (2/2)
+  #sysctl:
+  #  name: "{{ item.name }}"
+  #  value: "{{ item.value }}"
+  #  sysctl_file: /etc/sysctl.d/k8s.conf
+  #  reload: yes
+  #with_items:
+  #  - { name: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }
+  #  - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }

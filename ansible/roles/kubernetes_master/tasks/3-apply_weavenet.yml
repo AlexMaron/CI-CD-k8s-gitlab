@@ -1,0 +1,24 @@
+- name: create directory for weave
+  file:
+    path: /var/lib/weave
+    state: directory
+
+- name: generate password for weave
+  set_fact:
+    weave_pwd: "{{ lookup('password', '/dev/null length=30 chars=ascii_letters') }}"
+
+- name: creating file witch containing weave password
+  lineinfile:
+    line: "{{ weave_pwd }}"
+    state: present
+    create: yes
+    path: /var/lib/weave/weave.passwd
+
+- name: create secret
+  become: false
+  command: "kubectl create secret -n kube-system generic weave-passwd --from-file=/var/lib/weave/weave.passwd"
+    
+- name: apply weavenet
+  become: false
+  #command: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&password-secret=weave-passwd&env.IPALLOC_RANGE=192.168.0.0/24"
+  command: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version={{ default_kubernetes_version }}&password-secret=weave-passwd&env.IPALLOC_RANGE=192.168.0.0/24"
