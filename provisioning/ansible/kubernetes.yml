@@ -3,7 +3,7 @@
   become: yes
   roles:
     - common
-  tags: always
+  tags: common 
 
 - hosts: kubernetes_master
   tags: kubernetes_master
@@ -24,3 +24,9 @@
 #    - elk
     - docker
     - kubernetes
+
+- hosts: gitlab
+  tags: gitlab
+  become: yes
+  roles:
+    - gitlab_omnibus

@@ -1,0 +1,9 @@
+- hosts: 10.8.8.11
+  become: yes
+  tasks:
+  - name: "Re-run setup to use custom facts"
+    setup: 
+      filter: ansible_local
+    register: facts
+  - debug:
+      var: facts

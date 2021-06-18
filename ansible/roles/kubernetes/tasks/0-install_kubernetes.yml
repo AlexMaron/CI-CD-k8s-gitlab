@@ -1,0 +1,23 @@
+---
+- name: add GPG key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: set up kubernetes {{ kubernetes_release }} repository
+  apt_repository:
+    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+    update_cache: true
+
+- name: install kubelet, kubeadm, kubernetes-cni
+  apt: name={{ item }} state=latest
+  with_items:
+    - kubelet
+    - kubeadm
+    - kubernetes-cni
+  register: kubernetes_installed
+
+- name: hold upgrade kubernetes packages
+  dpkg_selections:
+    name: kubeadm
+    selection: hold

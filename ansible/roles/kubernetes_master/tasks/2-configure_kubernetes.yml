@@ -1,0 +1,42 @@
+- name: Configure node ip
+  lineinfile:
+    path: /etc/default/kubelet
+    line: KUBELET_EXTRA_ARGS=--node-ip={{ inventory_hostname }}
+    create: yes
+
+- name: Restart kubelet
+  service:
+    name: kubelet
+    daemon_reload: yes
+    state: restarted
+
+- name: kubeadm reset
+  shell: yes | kubeadm reset
+  
+- name: get kubernetes version
+  shell:
+    cmd: kubectl version --client --short | tr -cd '[0-9.]'
+  register: kubernetes_version
+
+- name: kubernetes initialize
+  command: "kubeadm init --apiserver-advertise-address=10.8.8.11 --apiserver-cert-extra-sans=10.8.8.11 --node-name node-1 --pod-network-cidr=10.8.8.0/24 --kubernetes-version stable-{{ default_kubernetes_version }}"
+
+- name: preparing starting cluster
+  command: "{{ item }}"
+  with_items:
+  - mkdir -p /home/vagrant/.kube
+  - cp -i /etc/kubernetes/admin.conf /home/{{ username_env }}/.kube/config
+  - chown {{ username_uid }}:{{ username_gid }} /home/{{ username_env }}/.kube/config
+
+
+- name: modify .bashrc
+  lineinfile:
+    path: "/home/{{ username_env }}/.bashrc"
+    line: "export KUBECONFIG=/home/{{ username_env }}/.kube/config"
+
+- name: Generate join command
+  command: kubeadm token create --print-join-command
+  register: join_command
+
+- name: Copy join command to local file
+  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
