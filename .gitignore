@@ -3,3 +3,5 @@ ssh_key/id_rsa
 *~
 provisioning/ansible/k8s_passwd
 provisioning/ansible/join-command
+*.bak.*
+
