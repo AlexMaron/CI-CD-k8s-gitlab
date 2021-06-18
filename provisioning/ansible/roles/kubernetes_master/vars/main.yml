@@ -1,6 +1,8 @@
 ---
 # vars file for kubernetes_master
 default_kubernetes_version: 1.21
+hostname: k8s-master
 username_env: vagrant
 username_uid: vagrant
 username_gid: docker
+kubernetes_repo: "kubernetes-xenial main" 

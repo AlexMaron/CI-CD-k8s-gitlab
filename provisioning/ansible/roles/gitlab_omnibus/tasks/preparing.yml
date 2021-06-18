@@ -1,0 +1,33 @@
+- name: install depenencies
+  package: name={{item}} state=present
+  with_items:
+  - curl
+  - openssh-server
+  - ca-certificates
+  - tzdata
+  - perl
+
+- name: set answers for postfix
+  shell:
+    cmd: |
+      echo "postfix postfix/mailname string shemelev@efti.ru" | debconf-set-selections && \
+      echo "postfix postfix/main_mailer_type string 'Internet Site'"
+
+- name: silent install postfix
+  package: name=postfix state=present
+
+- name: copy postfix config files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: 'main.cf.j2', dest: '/etc/postfix/main.cf' }
+    - { src: 'sasl_passwd.j2', dest: '/etc/postfix/sasl_passwd' }
+
+- name: generate postman
+  command: postmap /etc/postfix/sasl_passwd
+  notify: restart postfix
+
+- name: add gitlab repository
+  shell:
+    cmd: curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.deb.sh | sudo bash

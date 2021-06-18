@@ -19,7 +19,7 @@
   register: kubernetes_version
 
 - name: kubernetes initialize
-  command: "kubeadm init --apiserver-advertise-address=10.8.8.11 --apiserver-cert-extra-sans=10.8.8.11 --node-name node-1 --pod-network-cidr=10.8.8.0/24 --kubernetes-version stable-{{ default_kubernetes_version }}"
+  command: "kubeadm init --apiserver-advertise-address=10.8.8.11 --apiserver-cert-extra-sans=10.8.8.11 --node-name {{ hostname }} --pod-network-cidr=10.8.8.0/24 --kubernetes-version stable-{{ default_kubernetes_version }}"
 
 - name: preparing starting cluster
   command: "{{ item }}"
