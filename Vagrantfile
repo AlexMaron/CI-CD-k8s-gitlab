@@ -10,25 +10,25 @@ Vagrant.configure("2") do |config|
     {
       :hostname => "k8s-master",
       :box => "bento/ubuntu-18.04",
-      :ip => "10.8.8.11",
+      :ip => "192.168.0.211",
       :ssh_port => '2211',
     },
     {
       :hostname => "k8s-node1",
       :box => "bento/ubuntu-18.04",
-      :ip => "10.8.8.12",
+      :ip => "192.168.0.212",
       :ssh_port => '2212'
     },
     {
       :hostname => "k8s-node2",
       :box => "bento/ubuntu-18.04",
-      :ip => "10.8.8.13",
+      :ip => "192.168.0.213",
       :ssh_port => '2213'
     },
     {
       :hostname => "gitlab",
       :box => "bento/ubuntu-18.04",
-      :ip => "10.8.8.14",
+      :ip => "192.168.0.214",
       :ssh_port => '2214'
     }
   ]
@@ -39,7 +39,7 @@ Vagrant.configure("2") do |config|
       node.vm.box = machine[:box]
       node.vm.hostname = machine[:hostname]
       
-      node.vm.network :private_network, ip: machine[:ip]
+      node.vm.network :public_network, ip: machine[:ip]
       node.vm.network "forwarded_port", guest: 22, host: machine[:ssh_port], id: "ssh"
 
       node.vm.provider :virtualbox do |v|
@@ -52,27 +52,26 @@ Vagrant.configure("2") do |config|
    config.vm.provision "file", source: "ssh_key/id_rsa", destination: "/home/vagrant/.ssh/"
   config.vm.provision "file", source: "ssh_key/id_rsa.pub", destination: "/home/vagrant/.ssh/"
 
- 
   config.vm.provision "shell",
     inline: "set -x && \
              sed -i 's/^#.*StrictHostKeyChecking ask/    StrictHostKeyChecking no/' /etc/ssh/ssh_config && \
              if [[ $(cat /vagrant/ssh_key/id_rsa.pub | xargs -I {} grep {} ~/.ssh/authorized_keys | wc -l) -eq 0 ]]; then cat /vagrant/ssh_key/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys; fi && \
              chmod 644 /home/vagrant/.ssh/id_rsa.pub && \
              chmod 600 /home/vagrant/.ssh/id_rsa && \
+             apt update && apt upgrade -y && apt install build-essential zlib1g-dev libffi-dev linux-headers-$(uname -r) libffi-dev -y && \
+             wget https://www.openssl.org/source/openssl-1.1.1k.tar.gz && \
+             tar -zxvf openssl-1.1.1k.tar.gz && cd openssl-1.1.1k && \
+             ./config --prefix=/opt/openssl --openssldir=/opt/openssl && \ 
+             make && make install && cd ~ && \
              wget https://www.python.org/ftp/python/3.8.10/Python-3.8.10.tgz && \
-             tag -zxvf Python-3.8.10.tgz && cd Python-3.8.10 && \
-             cd Python-3.8.10 && ./configure --enable-optimizations && make install && \
-             update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
-             "
+             tar -zxvf Python-3.8.10.tgz && cd Python-3.8.10 && \
+             ./configure --enable-optimizations --with-openssl=/opt/openssl && make install
 
+            "
   config.vm.define "k8s-master" do |node1|
     node1.vm.provision "shell",
-      inline: "apt update && apt upgrade -y && \
-               apt install linux-headers-$(uname -r) python3-pip -y && \
-               curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-               python3 get-pip.py --force-reinstall && \
-               rm get-pip.py && \
-               pip3 install ansible cffi && \
+      inline: "pip3 install cffi ansible && \
+               echo 'if [[ -d ~/.local/bin ]];then export PATH=~/.local/bin:$PATH;fi' | tee -a ~/.bashrc && source ~/.bashrc && \
                cp -r /vagrant/provisioning/ansible /home/vagrant/ && \
                chmod o-w /home/vagrant/ansible && \
                chown -R vagrant:vagrant /home/vagrant/ansible && \

@@ -1,12 +1,13 @@
 [kubernetes_master]
-10.8.8.11
+192.168.0.211
 
 [kubernetes_nodes]
-10.8.8.12
-10.8.8.13
+192.168.0.212
+192.168.0.213
 
 [gitlab]
-10.8.8.14
+192.168.0.214
+
 
 [kubernetes:children]
 kubernetes_nodes
