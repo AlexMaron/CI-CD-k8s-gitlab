@@ -30,4 +30,7 @@
 
 - name: add gitlab repository
   shell:
-    cmd: curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.deb.sh | sudo bash
+    cmd: curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh | sudo bash
+
+- name: gitlab.update_cache
+  apt: update_cache=yes cache_valid_time=3600
