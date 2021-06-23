@@ -1,2 +1,16 @@
 ---
-# defaults file for kubernetes_master
+# vars file for kubernetes_master
+ip_netmask: 10.244.0.0/16
+default_kubernetes_version: 1.21
+hostname: k8s-master
+username_env: vagrant
+username_uid: vagrant
+username_gid: docker
+kubernetes_repo: "kubernetes-xenial main" 
+
+kubernetes_enable_web_ui: true
+kubernetes_web_ui_manifest_file: https://raw.githubusercontent.com/kubernetes/dashboard/v2.2.0/aio/deploy/recommended.yaml
+
+# Flannel config files.
+kubernetes_flannel_manifest_file_rbac: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/k8s-manifests/kube-flannel-rbac.yml
+kubernetes_flannel_manifest_file: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml 
