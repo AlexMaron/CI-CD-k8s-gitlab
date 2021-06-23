@@ -3,5 +3,5 @@
 - include: 0-install_kubernetes.yml
 - include: 1-configure_system.yml
 - include: 2-configure_kubernetes.yml
-- include: 3-apply_weavenet.yml
+- include: 3-apply_flannel_and_other.yml
 - include: 4-helm_install.yml

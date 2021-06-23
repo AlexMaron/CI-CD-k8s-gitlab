@@ -1,9 +1,2 @@
 ---
 # vars file for kubernetes_master
-ip_netmask: 192.168.0.0/24
-default_kubernetes_version: 1.21
-hostname: k8s-master
-username_env: vagrant
-username_uid: vagrant
-username_gid: docker
-kubernetes_repo: "kubernetes-xenial main" 

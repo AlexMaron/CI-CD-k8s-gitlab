@@ -13,16 +13,6 @@
 - name: 
   command: "kubeadm init --apiserver-advertise-address=10.8.8.11 --api-cert-extra-sans=10.8.8.11 --node-name k8s-master --pod-network-cidr=10.8.8.0/24 --kubernetes-version stable-1.21"
 
-  #- name: creating kubernetes user
-  #user:
-  # name: k8s
-  #  state: present
-  # password: "{{ password | password_hash('sha512') }}"
-  # shell: /bin/bash
-  # create_home: yes
-  # group: adm
-  # register: user_info
-
 - name: preparing starting cluster (1/2)
   command: "cp -i /etc/kubernetes/admin.conf {{ ansible_env.HOME }}/"
 
