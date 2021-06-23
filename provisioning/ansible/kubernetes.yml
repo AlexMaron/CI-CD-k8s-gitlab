@@ -24,9 +24,3 @@
 #    - elk
     - docker
     - kubernetes
-
-- hosts: gitlab
-  tags: gitlab
-  become: yes
-  roles:
-    - gitlab_omnibus

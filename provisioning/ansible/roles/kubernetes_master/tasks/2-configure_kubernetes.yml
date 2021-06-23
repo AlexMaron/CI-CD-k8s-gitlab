@@ -21,13 +21,18 @@
 - name: kubernetes initialize
   command: "kubeadm init --apiserver-advertise-address={{ ansible_ssh_host }} --apiserver-cert-extra-sans={{ ansible_ssh_host }} --node-name {{ hostname }} --pod-network-cidr={{ ip_netmask }} --kubernetes-version stable-{{ default_kubernetes_version }}"
 
-- name: preparing starting cluster
+- name: add config to env_user
   command: "{{ item }}"
   with_items:
   - mkdir -p /home/vagrant/.kube
   - cp -i /etc/kubernetes/admin.conf /home/{{ username_env }}/.kube/config
   - chown {{ username_uid }}:{{ username_gid }} /home/{{ username_env }}/.kube/config
 
+- name: add config to root user
+  command: "{{ item }}"
+  with_items:
+  - mkdir -p /root/.kube
+  - cp -i /etc/kubernetes/admin.conf /root/.kube/config
 
 - name: modify .bashrc
   lineinfile:

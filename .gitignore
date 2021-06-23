@@ -5,3 +5,5 @@ provisioning/ansible/k8s_passwd
 provisioning/ansible/join-command
 *.bak*
 *.swp
+*.swo
+*.swn
