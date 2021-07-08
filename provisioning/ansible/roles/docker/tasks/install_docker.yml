@@ -5,22 +5,12 @@
   register: GPG
   tags: docker_install
 
-- debug:
-    var: GPG
-    verbosity: 2
-  tags: docker_install
-  
 - name: set up docker {{ docker_release }} repository
   apt_repository:
     repo: deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release | lower }} stable
     state: present
     filename: docker
   register: release
-  tags: docker_install
-
-- debug:
-    var: release
-    verbosity: 2 
   tags: docker_install
 
 - name: update cache
@@ -47,21 +37,37 @@
   tags: docker_install
 
 - name: install docker
-  apt: name={{ item }} state=latest
-  with_items:
-    - docker-ce
-    - docker-ce-cli
-    - containerd.io
+  apt: 
+    name: docker-ce=5:20.10.7~3-0~ubuntu-bionic
+    state: present
   tags: docker_install
   ignore_errors: yes
 
-- name: fix bug then docker service crash on first startup. 
+#- name: add to docker.service flannel env file
+#  lineinfile:
+#    path: /lib/systemd/system/docker.service
+#    insertafter: "Type=notify"
+#    firstmatch: yes
+#    line: "EnvironmentFile=/run/flannel/subnet.env"
+#
+#- name: add docker to flannel network
+#  replace:
+#    path: /lib/systemd/system/docker.service
+#    regexp: '^ExecStart=.*'
+#    replace: 'ExecStart=/usr/bin/dockerd -H unix:// --containerd=/run/containerd/containerd.sock --bip=${FLANNEL_SUBNET} --mtu=${FLANNEL_MTU}'
+#  tags:
+#    - docker
+#    - docker_bip
+ 
+- name: change fd to unix
   replace:
     path: /lib/systemd/system/docker.service
-    regexp: '^ExacStart=.*'
-    replace: 'ExecStart=/usr/bin/dockerd -H unix:// --containerd=/run/containerd/conta
-    inerd.sock'
- 
+    regexp: '^ExecStart=.*'
+    replace: 'ExecStart=/usr/bin/dockerd -H unix:// --containerd=/run/containerd/containerd.sock'
+  tags:
+    - docker
+    - docker_bip
+
 - name: change docker runtime
   shell: |
     cat > /etc/docker/daemon.json <<EOF

@@ -4,17 +4,17 @@
     url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
     state: present
 
-- name: set up kubernetes {{ kubernetes_release }} repository
+- name: set up kubernetes repository
   apt_repository:
-    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+    repo: deb http://apt.kubernetes.io/ {{ kubernetes_repo }}
     update_cache: true
 
-- name: install kubelet, kubeadm, kubernetes-cni
-  apt: name={{ item }} state=latest
+- name: install kubelet, kubeadm, kubernetes-cni for nodes
+  apt: name={{ item }} state=present
   with_items:
-    - kubelet
-    - kubeadm
-    - kubernetes-cni
+    - kubelet={{ default_kubernetes_version }}
+    - kubeadm={{ default_kubernetes_version }}
+    - kubernetes-cni={{ default_kubernetes_cni_version }}
   register: kubernetes_installed
 
 - name: hold upgrade kubernetes packages

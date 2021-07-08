@@ -1,0 +1,27 @@
+- name: Configure Calico networking.
+  command: "{{ item }}"
+  with_items:
+    - kubectl apply -f {{ kubernetes_calico_manifest_file }}
+
+- name: Check if Kubernetes Dashboard UI service already exists.
+  shell: |
+    set -o pipefail
+    kubectl get services --namespace kube-system | grep -q kubernetes-dashboard
+  args:
+    executable: /bin/bash
+  changed_when: false
+  failed_when: false
+  register: kubernetes_dashboard_service
+  when: kubernetes_enable_web_ui | bool
+
+- name: Enable the Kubernetes Web Dashboard UI (if configured).
+  command: "kubectl create -f {{ kubernetes_web_ui_manifest_file }}"
+  when:
+  - kubernetes_enable_web_ui | bool
+  - kubernetes_dashboard_service.rc != 0
+
+- name: helm install
+  unarchive:
+    src: https://get.helm.sh/helm-v3.6.0-linux-amd64.tar.gz
+    dest: /usr/local/bin/
+    remote_src: yes

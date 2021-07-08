@@ -19,6 +19,36 @@
   #  create_home: yes
   #  group: adm
   #  register: user_info
+  #
+
+- name: check old pki existing
+  stat:
+    path: /etc/kubernetes/kubelet.conf
+  register: stat_result
+  tags: 
+    - never
+    - clean_cluster
+
+- name: clean_cluster debug
+  debug:
+    var: stat_result.stat.exists
+    verbosity: 2
+  tags: 
+    - never
+    - clean_cluster
+
+- name: delete old pki on nodes
+  file:
+    state: absent
+    path: "{{ item }}"
+  with_items:
+    - /etc/kubernetes/pki
+    - /etc/kubernetes/kubelet.conf
+  ignore_errors: yes
+  when: stat_result.stat.exists
+  tags:
+    - never
+    - clean_cluster
 
 - name: Copy the join command to server location
   copy: src=join-command dest=/tmp/join-command.sh mode=0777

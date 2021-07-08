@@ -1,0 +1,4 @@
+---
+# tasks file for minio
+- include: configure.yml
+#- include: install.yml

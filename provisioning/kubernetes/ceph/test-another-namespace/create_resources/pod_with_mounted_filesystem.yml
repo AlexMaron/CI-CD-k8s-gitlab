@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+   name: csi-rbd-demo-pod
+spec:
+   containers:
+     - name: web-server
+       image: nginx
+       volumeMounts:
+          - name: pvc-filesystem
+            mountPath: /var/lib/www/html
+   volumes:
+     - name: pvc-filesystem
+       persistentVolumeClaim:
+         claimName: rbd-pvc-filesystem
+         readOnly: false

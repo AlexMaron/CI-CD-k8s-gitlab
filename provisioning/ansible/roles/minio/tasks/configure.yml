@@ -1,0 +1,85 @@
+- name: Create partitions
+  community.general.parted:
+    state: present
+    device: "{{ item }}"
+    number: 1
+    flags: [ lvm ]
+  with_items:
+    - /dev/sdb
+    - /dev/sdc
+  tags:
+    - create_partitions
+    - envirinment_minio
+
+- name: remove volume group with logical volumes
+  community.general.lvg:
+    vg: minio-vg
+    state: absent
+    force: yes
+  tags: 
+    - never
+    - remove_lvm
+
+- name: Create volume group
+  community.general.lvg:
+    state: present
+    vg: minio-vg
+    pvs: /dev/sdb1,/dev/sdc1
+  tags:
+    - create_lvm
+    - envirinment_minio
+
+
+- name: Create a logical volume of 1 Gb
+  community.general.lvol:
+    vg: minio-vg
+    lv: "{{ item }}"
+    size: 1020m 
+    pvs: /dev/sdb1,/dev/sdc1
+  with_items:
+    - data1
+    - data2
+  tags:
+    - create_lvm
+    - envirinment_minio
+
+- name: check filesystem
+  shell:
+    cmd: file -Ls /dev/minio-vg/data1 | grep -oP '\w+(?= filesystem)' | grep ext4
+  ignore_errors: yes
+  register: fs_check
+
+- name: Create ext4 filesystem
+  filesystem:
+    fstype: ext4
+    force: yes
+    dev: "/dev/minio-vg/{{ item }}"
+  with_items:
+    - data1
+    - data2
+  tags: 
+    - create_fs
+    - create_lvm
+    - environment_minio
+
+- name: Create directories for mount point
+  file:
+    state: directory
+    path: "/mnt/data{{ item }}"
+  with_items: [1, 2]
+  tags: 
+    - create_lvm
+    - environment_minio
+
+- name: mount lvs
+  ansible.posix.mount:
+    state: mounted
+    fstype: ext4
+    path: "/mnt/data{{ item }}"
+    src: "/dev/minio-vg/data{{ item }}"
+  with_items: [1, 2]
+  when: fs_check != 0
+  tags: 
+    - create_lvm
+    - environment_minio
+
