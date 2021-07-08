@@ -1,0 +1,4 @@
+FROM minio/minio
+
+ENV MINIO_ROOT_USER=fenix
+ENV MINIO_ROOT_PASSWORD=

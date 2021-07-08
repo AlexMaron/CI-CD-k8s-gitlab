@@ -1,0 +1,36 @@
+---
+apiVersion: v1
+kind: ConfigMap
+data: 
+  config.json: |-
+    [
+      {
+        "clusterID": "4ce06a9e-dfed-11eb-8ae4-0800271e4154",
+          "monitors": [
+            "172.168.0.10:6789",
+            "172.168.0.11:6789",
+            "172.168.0.12:6789"
+        ]
+      }
+    ]
+metadata:
+  name: ceph-csi-config
+
+---
+apiVersion: v1
+kind: ConfigMap
+data: 
+  config.json: |-
+    {}
+metadata:
+  name: ceph-csi-encryption-kms-config
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: csi-rbd-secret
+  namespace: default
+stringData:
+  userID: kubernetes
+  userKey: AQBu/uZggNi0CxAAI57m6Ly+0+Hm16ictOknpA==

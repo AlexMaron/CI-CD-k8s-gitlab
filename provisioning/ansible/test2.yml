@@ -1,6 +1,12 @@
-- hosts: 192.168.0.211 
+- hosts: kubernetes_master
   become: yes
+  vars:
+    key_list:
+      - one
+      - two
+    values_list:
+      - apple
+      - orange
   tasks:
-  - name: Show ip address
     debug:
-      msg: "{{ ansible_ssh_host }}"
+      msg: "{{ dict(key_list | zip(values_list)) }}"
