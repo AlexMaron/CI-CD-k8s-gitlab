@@ -1,9 +1,11 @@
 ---
-- hosts: kubernetes_master
+- hosts: all
   become: yes
   roles:
     - common
-  tags: common 
+  tags: 
+    - always
+    - common 
 
 - hosts: kubernetes_master
   tags: kubernetes_master
@@ -18,9 +20,14 @@
   tags: kubernetes_nodes
   become: yes
   roles:
-    - common
 #    - node-exporter
 #    - cadvisor
 #    - elk
     - docker
     - kubernetes
+
+- hosts: kubernetes_master
+  tags: ceph
+  become: yes
+  roles:
+    - ceph

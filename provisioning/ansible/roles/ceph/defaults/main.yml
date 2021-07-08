@@ -1,0 +1,10 @@
+---
+# defaults file for ceph
+pool_name: kubernetes
+dashboard_pass_filename: dashboard-password
+mon1: 172.168.0.10
+mon2: 172.168.0.11
+mon3: 172.168.0.12
+mon_port: 6789
+mon_nodes: "\"{{ master_hostname }},{{ node1_hostname }},{{ node2_hostname }}\""
+manifests_path: '{{ home_env }}/provisioning/kubernetes/ceph'

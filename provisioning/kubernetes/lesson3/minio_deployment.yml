@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+spec:
+  replicas: 3 
+  selector:
+    matchLabels:
+      app: minio
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+        - image: minio/minio:RELEASE.2021-06-17T00-10-46Z-28-gac7697426
+          name: minio
+          ports:
+            - name: api
+              containerPort: 9000
+            - name: console
+              containerPort: 8010
+          env:
+            - name: minio_user
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: MINIO_ROOT_USER
+            - name: minio_password
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: MINIO_ROOT_PASSWORD
+          command: ["server"]
+          args: ["/data", "--console-address", ":8010"]
+          resources:
+            requests:
+              memory: 200Mi
+              cpu: 100m
+            limits:
+              memory: 200Mi
+              cpu: 100m
+          readinessProbe:
+            httpGet:
+              port: 9000
+              path: /minio/health/live
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              port: 9000
+              path: /minio/health/live
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              port: 9000
+              path: /minio/health/live
+            periodSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+            initialDelaySeconds: 10
+          volumeMounts:
+            - name: data1
+              mountPath: data1
+            - name: data2
+              mountPath: data2
+      volumes:
+        - name: data1
+          hostPath:
+            path: /mnt/data1
+            type: Directory
+        - name: data2
+          hostPath:
+            path: /mnt/data2
+            type: Directory
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+spec:
+  selector:
+    app: minio
+  ports:
+    - name: api
+      protocol: TCP
+      port: 9000
+      targetPort: 9000
+    - name: console
+      protocol: TCP
+      port: 8010
+      targetPort: 8010
