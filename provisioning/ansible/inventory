@@ -1,13 +1,13 @@
 [kubernetes_master]
-192.168.88.210
+172.16.0.10 ansible_python_interpreter=/usr/bin/python3.6
 
 [kubernetes_nodes]
-192.168.88.211
-192.168.88.212
-192.168.88.213
+172.16.0.11
+172.16.0.12
+172.16.0.13
 
 [gitlab]
-192.168.88.213
+172.16.0.11
 
 
 [kubernetes:children]

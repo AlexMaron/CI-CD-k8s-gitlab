@@ -1,0 +1,6 @@
+---
+- hosts: kubernetes_master
+  tags: nginx
+  become: yes
+  roles:
+    - nginx

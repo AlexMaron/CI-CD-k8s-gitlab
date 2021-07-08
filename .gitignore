@@ -1,4 +1,6 @@
 ssh_key/id_rsa
+vim
+plugged
 .vagrant
 *~
 provisioning/ansible/k8s_passwd

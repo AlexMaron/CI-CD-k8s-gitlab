@@ -1,15 +1,37 @@
 ---
+- hosts: all
+  become: yes
+  gather_facts: true
+  tasks:
+    - name: get hostname
+      command: hostname
+      register: hostnames
+
+    - name: debug
+      debug:
+        msg: "{{ ansible_play_hosts | map('extract', hostvars, 'hostnames') | map(attribute='stdout') | list }}"
+      register: ansible_hostnames
+      run_once: yes
+
+    - name: show one host
+      debug:
+        msg: "{{ ansible_hostnames.msg[1] }}"
+      run_once: yes
+
+    - name: file
+      copy:
+        content: "{{ ansible_hostnames }}"
+        dest: ansible_hostnames
+        force: yes
 - hosts: kubernetes_master
   become: yes
+  vars:
+    pool_hostnames: "{{ lookup('file', '/home/vagrant/ansible_hostnames') | from_json }}"
   tasks:
-  - name:
-    shell:
-      cmd: kubectl version --client --short | grep -o '[0-9.]\+' | sed 's/..$//'
-    register: kubernetes_version
+    #- name: get value from file
+    #   set_fact: 
+    #    hostnames: "{{ input.msg }}"
 
-  - name: set fact kubernetes version 
-    set_fact:
-      k8s_version: "{{ kubernetes_version.stdout }}"
-
-  - debug:
-      var: kubernetes_version.stdout
+    - name: print out msg
+      debug:
+        msg: "{{ pool_hostnames.msg[3] }}"

@@ -1,0 +1,128 @@
+- name: download cephadm
+  get_url:
+    url: https://github.com/ceph/ceph/raw/pacific/src/cephadm/cephadm
+    dest: "{{ home_env }}/"
+
+- name: Changing permission
+  file:
+    dest: "{{ home_env }}/cephadm"
+    mode: u+x
+
+- name: add ceph repository
+  shell:
+    cmd: "{{ home_env }}/cephadm add-repo --release pacific"
+
+- name: install cephadm
+  shell:
+    cmd: "{{ home_env }}/cephadm install"
+
+- name: ceph cluster bootstrap
+  shell:
+    cmd: "cephadm bootstrap --mon-ip {{ ansible_ssh_host }}"
+
+- name: ssh-copy-id ceph public key
+  command: ssh-copy-id -f -i /etc/ceph/ceph.pub root@{{ item }}
+  with_items:
+    - "{{ node1_ip }}"
+    - "{{ node2_ip }}"
+    - "{{ node3_ip }}"
+
+- name: install ceph-common
+  command: cephadm install ceph-common
+
+- name: add hosts to ceph cluster
+  command: ceph orch host add {{ item.host }} {{ item.ip }}
+  with_items:
+    - { host: "{{ node1_hostname }}", ip: "{{ node1_ip }}" }
+    - { host: "{{ node2_hostname }}", ip: "{{ node2_ip }}" }
+    - { host: "{{ node3_hostname }}", ip: "{{ node3_ip }}" }
+
+- name: add additional monitors
+  shell: ceph orch apply mon {{ mon_nodes }}
+
+- name: add OSDs
+  command: ceph orch apply osd --all-available-devices
+
+- name: copy password file for dashboard
+  copy:
+    src: "{{ dashboard_pass_filename }}"
+    dest: "/tmp/{{ dashboard_pass_filename }}"
+    force: yes
+
+- name: change passwprd to dashboard
+  command: "sudo ceph dashboard ac-user-set-password admin -i /tmp/{{ dashboard_pass_filename }}"
+
+- name: create kubernetes pool
+  command: ceph osd pool create {{ pool_name }}
+
+- name: initialize pool
+  command: rbd pool init {{ pool_name }}
+
+- name: setup ceph client authentication
+  command: ceph auth get-or-create client.kubernetes mon 'profile rbd' osd 'profile rbd pool=kubernetes' mgr 'profile rbd pool=kubernetes'
+  register: ceph_kubernetes_auth
+
+- name: get ceph auth key
+  debug:
+    msg: "{{ ceph_kubernetes_auth.stdout.split(' ')[-1] }}"
+  register: ceph_kubernetes_auth_key
+
+- name: get mon dump
+  command: ceph mon dump
+  register: ceph_mon_dump
+
+- name: get fsid
+  debug: 
+    msg: "{{ ceph_mon_dump.stdout.split('\n')[1].split(' ')[-1] }}"
+  register: ceph_kubernetes_fsid
+
+- name: create container storage interface config map
+  template:
+    src: csi-config-map.yml.j2
+    dest: "{{ manifests_path }}/csi-config.yml"
+    force: yes
+    mode: '0644'
+
+- name: appy created manifests
+  command: "kubectl apply -f {{ manifests_path }}/csi-config.yml"
+
+- name: create ServiceAccount, RBAC ClusterRole/ClusterRoleBinding
+  shell: 
+    cmd: kubectl apply -f {{ item }} 
+  with_items:
+    - https://raw.githubusercontent.com/ceph/ceph-csi/master/deploy/rbd/kubernetes/csi-provisioner-rbac.yaml
+    - https://raw.githubusercontent.com/ceph/ceph-csi/master/deploy/rbd/kubernetes/csi-nodeplugin-rbac.yaml
+    - https://raw.githubusercontent.com/ceph/ceph-csi/master/deploy/rbd/kubernetes/csi-rbdplugin-provisioner.yaml 
+    - https://raw.githubusercontent.com/ceph/ceph-csi/master/deploy/rbd/kubernetes/csi-rbdplugin.yaml
+
+- name: wait when ceph provisioner deployment get ready
+  command: kubectl wait --for condition=available --timeout=600s deploy/csi-rbdplugin-provisioner
+
+- name: create storageClass
+  template:
+    src: csi-rbd-storage-class.yml.j2
+    dest: "{{ manifests_path }}/csi-rbd-storage-class.yml"
+    force: yes
+    mode: '0644'
+
+- name: appy storageClass
+  command: "kubectl apply -f {{ manifests_path }}/csi-rbd-storage-class.yml"
+
+- name: disable SSL for dashboard
+  command: ceph config set mgr mgr/dashboard/ssl false
+
+- name: change default http port for dashboard
+  command: ceph config set mgr mgr/dashboard/server_port {{ dashboard_port }}
+
+- name: configure url prefix for ceph dashboard
+  command: ceph config set mgr mgr/dashboard/url_prefix ceph
+
+- name: disable the redirection for ceph dashboard
+  command: ceph config set mgr mgr/dashboard/standby_behaviour "error"
+
+- name: restart ceph dashboard
+  shell: 
+    cmd: |
+      ceph mgr module disable dashboard
+      ceph mgr module enable dashboard
+

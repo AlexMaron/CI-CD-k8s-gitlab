@@ -1,0 +1,47 @@
+- name: "update packages"
+  apt: update_cache=yes
+
+- name: install additional tools
+  package: name={{ item }} state=present
+  with_items:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  tags: common_install
+
+- name: install chrony
+  package: name=chrony state=present
+  tags: common_install
+
+- name: configure chrony
+  template:
+    src: chrony.conf.j2
+    dest: /etc/chrony/chrony.conf
+    force: yes
+    owner: root
+    group: root
+  notify:
+    - restart chrony
+
+- name: check whether hosts file contains node names
+  command: grep -Fxq "{{ master_ip }} {{ master_hostname }}" /etc/hosts
+  register: check_hosts
+  ignore_errors: yes
+  tags: 
+    - common_install
+
+- name: add hosts
+  lineinfile:
+    path: /etc/hosts
+    state: present
+    insertafter: ".*allrouters"
+    line: |
+      {{ master_ip }} {{ master_hostname }} {{ master_hostname }}
+      {{ node1_ip }} {{ node1_hostname }} {{ node1_hostname }}  
+      {{ node2_ip }} {{ node2_hostname }} {{ node2_hostname }}  
+      {{ node3_ip }} {{ node3_hostname }} {{ node3_hostname }}  
+  when: check_hosts.rc != 0
+  tags: 
+    - common_install

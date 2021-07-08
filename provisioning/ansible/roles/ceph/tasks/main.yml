@@ -1,0 +1,3 @@
+---
+# tasks file for ceph
+- include: install.yml

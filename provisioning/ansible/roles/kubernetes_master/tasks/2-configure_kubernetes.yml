@@ -4,14 +4,21 @@
     line: KUBELET_EXTRA_ARGS=--node-ip={{ inventory_hostname }}
     create: yes
 
-- name: Restart kubelet
+- name: restart kubelet
   service:
-    name: kubelet
-    daemon_reload: yes
+    name: kubelet      
+    daemon_reload: yes 
     state: restarted
-
+    
 - name: kubeadm reset
-  shell: yes | kubeadm reset
+  shell: |
+    set -o pipefail
+    yes | kubeadm reset
+  args:
+    executable: /bin/bash
+  tags: 
+    - never
+    - clean_cluster
   
 - name: get kubernetes version
   shell:
@@ -19,29 +26,58 @@
   register: kubernetes_version
 
 - name: kubernetes initialize
-  command: "kubeadm init --apiserver-advertise-address={{ ansible_ssh_host }} --apiserver-cert-extra-sans={{ ansible_ssh_host }} --node-name {{ hostname }} --pod-network-cidr={{ ip_netmask }} --kubernetes-version stable-{{ default_kubernetes_version }}"
+  command: "kubeadm init --apiserver-advertise-address={{ ansible_ssh_host }} --apiserver-cert-extra-sans={{ ansible_ssh_host }} --node-name {{ master_hostname }} --pod-network-cidr={{ ip_netmask }} --kubernetes-version stable-{{ short_kubernetes_version }}"
 
-- name: add config to env_user
-  command: "{{ item }}"
-  with_items:
-  - mkdir -p /home/vagrant/.kube
-  - cp -i /etc/kubernetes/admin.conf /home/{{ username_env }}/.kube/config
-  - chown {{ username_uid }}:{{ username_gid }} /home/{{ username_env }}/.kube/config
+- name: create .kube directory to vagrant user
+  file:
+    path: "{{ home_env }}/.kube"
+    state: directory
+    owner: "{{ username_uid }}"
+    group: "{{ username_gid }}"
 
-- name: add config to root user
-  command: "{{ item }}"
-  with_items:
-  - mkdir -p /root/.kube
-  - cp -i /etc/kubernetes/admin.conf /root/.kube/config
+- name: add kubeadm config to vagrant user
+  file:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ home_env }}/.kube/config"
+    state: hard
+    mode: '0600'
+    owner: "{{ username_uid }}"
+    group: "{{ username_gid }}"
+
+- name: create .kube directory to root user
+  file:
+    path: /root/.kube
+    state: directory
+
+- name: add kubeadm config to root user
+  file:
+    src: /etc/kubernetes/admin.conf
+    dest: /root/.kube/config
+    state: hard
+    mode: '0600'
+
+- name: create kubectl completion
+  shell: 
+    cmd: kubectl completion bash > {{ kubectl_complete_config }}
+
+- name: adding alias from kubectl into .bashrc
+  lineinfile:
+    path: "{{ home_env }}/.bashrc"
+    line: "alias k=kubectl"
+
+- name: adding completion config to .bashrc
+  lineinfile:
+    path: "{{ home_env }}/.bashrc"
+    line: "{{ kubectl_complete_source }}"
 
 - name: modify .bashrc
   lineinfile:
-    path: "/home/{{ username_env }}/.bashrc"
-    line: "export KUBECONFIG=/home/{{ username_env }}/.kube/config"
+    path: "{{ home_env }}/.bashrc"
+    line: "export KUBECONFIG={{ home_env }}/.kube/config"
 
 - name: Generate join command
   command: kubeadm token create --print-join-command
   register: join_command
 
 - name: Copy join command to local file
-  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
+  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command" mode='0644'

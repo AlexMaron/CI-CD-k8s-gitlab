@@ -1,7 +1,0 @@
-- name: download helm
-  shell: 
-    cmd: |
-      wget -P /home/{{ username_env }}/ https://get.helm.sh/helm-v3.6.0-linux-amd64.tar.gz && \
-      tar -zxvf /home/{{ username_env }}/helm*.tar.gz && \
-      mv /home/{{ username_env }}/linux-amd64/helm /usr/local/bin/
-
