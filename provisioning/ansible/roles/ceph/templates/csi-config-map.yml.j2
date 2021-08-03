@@ -7,9 +7,9 @@ data:
       {
         "clusterID": "{{ ceph_kubernetes_fsid.msg }}",
           "monitors": [
-            "{{ mon1 }}:{{ mon_port }}",
-            "{{ mon2 }}:{{ mon_port }}",
-            "{{ mon3 }}:{{ mon_port }}"
+            "{{ master_ip }}:{{ mon_port }}",
+            "{{ node1_ip }}:{{ mon_port }}",
+            "{{ node2_ip }}:{{ mon_port }}"
         ]
       }
     ]
