@@ -30,4 +30,4 @@
   tags: ceph
   become: yes
   roles:
-    - ceph
+    - { role: ceph, when: ceph_enabled: false }
