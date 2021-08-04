@@ -1,0 +1,37 @@
+- name: add helm repo bitnami/metallb
+  community.kubernetes.helm_repository:
+    name: metallb
+    repo_url: "https://metallb.github.io/metallb"
+
+#- name: deploy MetalLB
+#  community.kubernetes.helm:
+#    state: present
+#    name: metallb
+#    chart_ref: metallb/metallb
+#    namespace: metallb
+#    create_namespace: true
+#    update_repo_cache: yes
+#    values:
+#      configInline:
+#        address-pools:
+#          - name: default
+#            protocol: layer2
+#            addresses:
+#            - 192.168.88.210-192.168.88.240
+
+- name: MetalLB. Create a ConfigMap.
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        namespace: metallb
+        name: config
+      data:
+        config: |
+          address-pools:
+          - name: default
+            protocol: layer2
+            addresses:
+            - 192.168.88.210-192.168.88.240
