@@ -4,7 +4,6 @@
   roles:
     - common
   tags: 
-    - always
     - common 
 
 - hosts: kubernetes_master
@@ -27,7 +26,17 @@
     - kubernetes
 
 - hosts: kubernetes_master
+  become: yes
+  roles:
+    - { role: metallb, tags: metallb, when: metallb|default(true) }
+
+- hosts: kubernetes_master
+  become: yes
+  roles:
+    - { role: ingress-nginx, tags: ingress-nginx, when: ingress_nginx|default(true) }
+
+- hosts: kubernetes_master
   tags: ceph
   become: yes
   roles:
-    - { role: ceph, when: ceph_enabled: false }
+    - { role: ceph, when: ceph_enabled|default(false) }

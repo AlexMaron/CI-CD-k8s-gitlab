@@ -20,8 +20,23 @@
   - kubernetes_enable_web_ui | bool
   - kubernetes_dashboard_service.rc != 0
 
-- name: helm install
+- name: download helm
   unarchive:
     src: https://get.helm.sh/helm-v3.6.0-linux-amd64.tar.gz
-    dest: /usr/local/bin/
+    dest: "{{ home_env }}/"
     remote_src: yes
+  tags: helm_install
+
+- name: move helm binary to PATH
+  copy:
+    src: "{{ home_env }}/linux-amd64/helm"
+    dest: /usr/local/bin/
+    mode: 0755
+    force: yes
+  tags: helm_install
+
+- name: delete helm src
+  file:
+    state: absent
+    path: "{{ home_env }}/linux-amd64"
+  tags: helm_install
