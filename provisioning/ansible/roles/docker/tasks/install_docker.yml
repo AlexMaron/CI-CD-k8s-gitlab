@@ -38,7 +38,7 @@
 
 - name: install docker
   apt: 
-    name: docker-ce=5:20.10.7~3-0~ubuntu-bionic
+    name: docker-ce=5:20.10.8~3-0~ubuntu-focal
     state: present
   tags: docker_install
   ignore_errors: yes

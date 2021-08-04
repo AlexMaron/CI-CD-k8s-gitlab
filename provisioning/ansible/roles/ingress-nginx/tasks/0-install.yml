@@ -1,0 +1,21 @@
+- name: Ingress-nginx. Add helm repo.
+  community.kubernetes.helm_repository:
+    name: ingress-nginx
+    repo_url: "https://kubernetes.github.io/ingress-nginx"
+
+- name: Ingress-nginx. Deploy ingress-nginx.
+  community.kubernetes.helm:
+    name: ingress-nginx
+    chart_ref: ingress-nginx/ingress-nginx
+    namespace: ingress-nginx
+    create_namespace: yes
+    update_repo_cache: yes
+    values:
+      hostNetwork: true
+      hostPort:
+        enabled: true
+      kind: DaemonSet
+      toleration:
+        - key: "node-role.kubernetes.io/master"
+          operator: "Exist"
+          effect: "NoSchedule"

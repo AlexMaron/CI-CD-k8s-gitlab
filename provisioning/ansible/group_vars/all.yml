@@ -27,5 +27,8 @@ chrony_pool: 2.ru.pool.ntp.org
 # ceph
 dashboard_port: 8099
 
-# nginx-proxy
-nginx_ceph_dashboard_port: 30010
+# metallb
+metallb: true
+
+# ingress-nginx
+ingress-nginx: true
