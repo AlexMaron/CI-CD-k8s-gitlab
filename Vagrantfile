@@ -23,6 +23,13 @@ BOX                       = "bento/ubuntu-20.04"
 
   servers=[
     {
+      :hostname => "k8s-master",
+      :box => BOX,
+      :ip => "#{SUBNET}204",
+      :ssh_port => '2210',
+      :persistent_data => "~/vagrant/persistent_disk/k8s-master.vdi",
+    },
+    {
       :hostname => "k8s-node1",
       :box => BOX,
       :ip => "#{SUBNET}201",
@@ -42,13 +49,6 @@ BOX                       = "bento/ubuntu-20.04"
       :ip => "#{SUBNET}203",
       :ssh_port => '2213',
       :persistent_data => "~/vagrant/persistent_disk/k8s-node3.vdi",
-    },
-    {
-      :hostname => "k8s-master",
-      :box => BOX,
-      :ip => "#{SUBNET}204",
-      :ssh_port => '2210',
-      :persistent_data => "~/vagrant/persistent_disk/k8s-master.vdi",
     }
   ]
 
@@ -82,12 +82,12 @@ Vagrant.configure("2") do |config|
 #  config.vbguest.installer_options = { allow_kernel_upgrade: true }
   #config.vbguest.auto_update = false
   #config.vbguest.no_remote = true
-
-  # Pre-provision # All hosts
-  config.vm.provision "shell", path: "main-provision.sh"
+ 
   # Pre-provision # k8s-master host
   config.vm.define "k8s-master" do |master|
     master.vm.provision "shell", path: "k8s-provision.sh"
+  # Pre-provision # All hosts
+  config.vm.provision "shell", path: "main-provision.sh"
      # ansible provision
      # ansible_path = "/vagrant/provisioning/ansible"
      # master.vm.provision "ansible_local" do |disk_provision|

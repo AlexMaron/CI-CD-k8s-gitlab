@@ -1,5 +1,5 @@
 ssh_key/id_rsa
-vim
+ssh_key/id_rsa.pub
 plugged
 .vagrant
 *~
@@ -9,3 +9,4 @@ provisioning/ansible/join-command
 *.swp
 *.swo
 *.swn
+k8s-master.log
