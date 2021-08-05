@@ -1,2 +1,9 @@
 ---
 # tasks file for roles/postgres
+- include: 0-install.yml
+  tags: postgres_install
+- include: 1-config.yml
+  tags: postgres_config
+- include: 2-keycloak.yml
+  tags: postgres_keycloak
+  when: keycloak_enabled

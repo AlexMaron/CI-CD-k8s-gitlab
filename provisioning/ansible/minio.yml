@@ -1,5 +1,0 @@
-- hosts: all
-  tags: minio
-  become: yes
-  roles:
-    - minio

@@ -33,10 +33,20 @@
 - hosts: kubernetes_master
   become: yes
   roles:
-    - { role: ingress-nginx, tags: ingress-nginx, when: ingress_nginx|default(true) }
+    - { role: ingress-nginx, tags: ingress-nginx, when: ingress_nginx_enabled|default(true) }
 
 - hosts: kubernetes_master
   tags: ceph
   become: yes
   roles:
     - { role: ceph, when: ceph_enabled|default(false) }
+
+- hosts: postgres
+  become: yes
+  roles:
+    - { role: postgres, tags: postgres, when: postgres_enabled|default(false) }
+
+- hosts: kubernetes_master
+  become: yes
+  roles:
+    - { role: keycloak, tags: keycloak, when: keycloak_enabled|default(false) }
