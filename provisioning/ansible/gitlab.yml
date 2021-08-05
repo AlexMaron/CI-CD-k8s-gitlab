@@ -1,6 +1,0 @@
----
-- hosts: gitlab
-  tags: gitlab_omnibus
-  become: yes
-  roles:
-    - gitlab_omnibus

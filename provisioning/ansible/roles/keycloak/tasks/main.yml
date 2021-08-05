@@ -1,0 +1,4 @@
+---
+# tasks file for roles/keycloak
+- include: 0-install.yml
+  tags: keycloak_install
