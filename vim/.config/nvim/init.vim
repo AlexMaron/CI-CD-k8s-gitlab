@@ -55,12 +55,19 @@ let g:unite_source_history_yank_enable=1
 let g:unite_prompt='» '
 let g:unite_split_rule = 'botright'
 let g:unite_source_rec_async_command = ['ag', '--follow', '--nocolor', '--nogroup', '--hidden', '-g', '']
-if executable('ag')
-  let g:unite_source_grep_command='ag'
-  let g:unite_source_grep_default_opts='--nocolor --nogroup -S -C4'       
-  let g:unite_source_grep_recursive_opt=''
-endif
-	" The prefix key.
+
+"if executable('ag')
+"  let g:unite_source_grep_command='ag'
+"  let g:unite_source_grep_default_opts='--nocolor --nogroup -S -C4'       
+"  let g:unite_source_grep_recursive_opt=''
+"endif
+let g:unite_source_grep_command = 'ag'
+let g:unite_source_grep_default_opts =
+    \ '--line-numbers --nocolor --nogroup --hidden --ignore ' .
+    \  '''.hg'' --ignore ''.svn'' --ignore ''.git'' --ignore ''.bzr'''
+let g:unite_source_grep_recursive_opt = ''
+
+" The prefix key.
 	nnoremap    [unite]   <Nop>
 	nmap    f [unite]
 	nnoremap <silent> [unite]c  :<C-u>UniteWithCurrentDir
@@ -83,7 +90,8 @@ endif
 	        \ :<C-u>Unite -buffer-name=files -no-split
 	        \ jump_point file_point buffer_tab
 	        \ file_rec:! file file/new<CR>
-	" Start insert.
+  nnoremap  <silent> [unite]g  :<C-u>Unite grep:.<CR>
+  " Start insert.
 	"call unite#custom#profile('default', 'context', {
 	"\   'start_insert': 1
 	"\ })
@@ -126,3 +134,12 @@ endif
 	  " Runs "split" action by <C-s>.
 	  imap <silent><buffer><expr> <C-s>     unite#do_action('split')
 	endfunction"}}}
+
+  " Go to last file(s) if invoked without arguments.
+autocmd VimLeave * nested if (!isdirectory($HOME . "/.vim")) |
+    \ call mkdir($HOME . "/.vim") |
+    \ endif |
+    \ execute "mksession! " . $HOME . "/.vim/Session.vim"
+
+autocmd VimEnter * nested if argc() == 0 && filereadable($HOME . "/.vim/Session.vim") |
+    \ execute "source " . $HOME . "/.vim/Session.vim"
