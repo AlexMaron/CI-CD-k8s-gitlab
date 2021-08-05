@@ -1,0 +1,32 @@
+- name: Keycloak. Add helm repo.
+  become: true
+  become_user: vagrant
+  community.kubernetes.helm_repository:
+    name: bitnami
+    repo_url: https://charts.bitnami.com/bitnami
+
+- name: Keycloak. Deploy.
+  become: true
+  become_user: vagrant
+  community.kubernetes.helm:
+    name: keycloak
+    chart_ref: bitnami/keycloak
+    namespace: keycloak
+    create_namespace: yes
+    values:
+      auth:
+        adminUser: admin
+        adminPassword: "{{ default_password }}"
+        managementPassword: "{{ default_password }}"
+      postgresql:
+        enabled: false
+      externalDatabase:
+        host: "{{ node1_ip }}"
+        user: keycloak
+        password: "{{ default_password }}"
+        database: keycloak
+  register: debug_keycloak
+
+- name: debug
+  debug:
+    var: debug_keycloak

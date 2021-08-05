@@ -6,6 +6,9 @@
 192.168.88.202
 192.168.88.203
 
+[postgres]
+192.168.88.201
+
 [kubernetes:children]
 kubernetes_nodes
 kubernetes_master

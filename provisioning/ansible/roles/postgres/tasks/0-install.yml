@@ -1,0 +1,12 @@
+- name: install postgresql
+  package:
+    state: present
+    name: postgresql
+
+- name: install dependencies for ansible postgresql_user module
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python3-psycopg2
+    - acl
