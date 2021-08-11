@@ -1,0 +1,6 @@
+---
+# tasks file for roles/cert-manager
+- include: 0-install.yml
+  tags: cert_manager_install
+- include: 1-config.yml
+  tags: cert_manager_config
