@@ -9,6 +9,6 @@ data:
       server_name localhost;
     
       location / {
-        proxy_pass        http://172.16.0.10:8080/ceph/;
+        proxy_pass        http://kuard;
       }
     }

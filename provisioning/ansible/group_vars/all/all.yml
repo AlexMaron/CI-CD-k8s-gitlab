@@ -40,3 +40,6 @@ postgres_enabled: true
 keycloak_enabled: true
 keycloak_db_user: keycloak
 keycloak_db: keycloak
+
+# Cert-manager
+cert_manager_enabled: true
