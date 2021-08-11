@@ -18,6 +18,16 @@
         adminUser: admin
         adminPassword: "{{ default_password }}"
         managementPassword: "{{ default_password }}"
+      proxyAddressForwarding: true
+      service:
+        type: NodePort
+      ingress:
+        enabled: true
+        hostname: keycloak.alexmaron.xyz
+        annotations:
+          kubernetes.io/ingress.class: "nginx"
+          cert-manager.io/cluster-issuer: "letsencrypt-prod"
+        tls: true
       postgresql:
         enabled: false
       externalDatabase:

@@ -1,0 +1,17 @@
+- name: Cert-manager. Create config manifest for staging.
+  template:
+    src: letsencrypt-stage.yml.j2
+    dest: /tmp/letsencrypt-stage.yml
+    force: yes
+
+- name: Cert-manager. Create config manifest for staging.
+  template:
+    src: letsencrypt-prod.yml.j2
+    dest: /tmp/letsencrypt-prod.yml
+    force: yes
+
+- name: Cert-manager. Configure staging let's encrypt issuer.
+  command: kubectl apply -f /tmp/letsencrypt-stage.yml
+
+- name: Cert-manager. Configure production let's encrypt issuer.
+  command: kubectl apply -f /tmp/letsencrypt-prod.yml

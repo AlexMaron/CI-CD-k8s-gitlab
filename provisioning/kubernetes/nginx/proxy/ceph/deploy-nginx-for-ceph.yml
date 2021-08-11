@@ -3,10 +3,10 @@ kind: Deployment
 metadata:
   name: nginx-deploy
 spec:
-  replicas: 4
+  replicas: 2
   selector:
     matchLabels:
-      app: nginx-test
+      app: nginx-kuard
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -15,7 +15,7 @@ spec:
   template:
     metadata:
       labels:
-        app: nginx-test
+        app: nginx-kuard
     spec:
       containers:
       - image: nginx:1.12
