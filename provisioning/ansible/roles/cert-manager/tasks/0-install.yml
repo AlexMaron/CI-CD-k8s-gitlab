@@ -11,5 +11,7 @@
     chart_ref: jetstack/cert-manager
     update_repo_cache: 
     chart_version: v1.4.0
+    wait: yes
+    wait_timeout: 600s
     values:
       installCRDs: true

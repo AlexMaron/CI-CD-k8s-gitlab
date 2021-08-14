@@ -10,3 +10,4 @@ provisioning/ansible/join-command
 *.swo
 *.swn
 k8s-master.log
+provisioning/ansible/test*

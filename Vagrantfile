@@ -62,9 +62,7 @@ Vagrant.configure("2") do |config|
       node.vm.box = machine[:box]
       node.vm.hostname = machine[:hostname]
       
-      node.vm.network :public_network, ip: machine[:ip],
-        auto_config: true,
-        virtual__intnet: "k8s-net"
+      node.vm.network :public_network, ip: machine[:ip]
       node.vm.network "forwarded_port", guest: 22, host: machine[:ssh_port], id: "ssh"
       host = machine[:hostname]
       node.vm.provider :virtualbox do |v|
@@ -73,7 +71,7 @@ Vagrant.configure("2") do |config|
       #    v.customize ["createhd", "--filename", data, '--size', DISK_SIZE]
       #    v.customize ["storageattach", :id, "--storagectl", "SATA Controller", "--port", i, "--type", "hdd", "--medium", data]
       #  end
-        v.customize ["modifyvm", :id, "--memory", 4096, "--cpus", 3]
+        v.customize ["modifyvm", :id, "--memory", MEMORY, "--cpus", CPUS]
         v.customize ["modifyvm", :id, "--name", host]
       end
     end
