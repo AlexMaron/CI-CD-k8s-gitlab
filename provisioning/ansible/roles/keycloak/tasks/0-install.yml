@@ -13,6 +13,8 @@
     chart_ref: bitnami/keycloak
     namespace: keycloak
     create_namespace: yes
+    wait: yes
+    wait_timeout: 600s
     values:
       auth:
         adminUser: admin

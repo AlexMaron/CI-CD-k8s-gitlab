@@ -1,12 +1,17 @@
 set nocompatible               " be improved, required
 filetype off                   " required
+
+let g:session_autosave = 'yes'
+let g:session_autoload = 'yes'
+let g:session_default_overwrite = 1
+
 " set the runtime path to include Vundle and initialize
-let g:indent_guides_enable_on_vim_startup = 1
 set rtp+=~/.config/nvim/bundle/Vundle.vim
 set ts=2 sw=2 et
 let g:indent_guides_start_level = 1
 let g:indent_guides_guide_size = 2
 let g:indent_guides_auto_colors = 0
+let g:indent_guides_enable_on_vim_startup = 1
 hi IndentGuidesOdd  guibg=black   ctermbg=239
 hi IndentGuidesEven guibg=darkgray ctermbg=237
 call vundle#begin()            " required
@@ -21,7 +26,7 @@ Plugin 'tpope/vim-fugitive'
 Plugin 'scrooloose/syntastic'
 Plugin 'vim-airline/vim-airline'
 Plugin 'vim-airline/vim-airline-themes'
-Plugin 'valloric/YouCompleteme'
+"Plugin 'valloric/YouCompleteMe'
 Plugin 'mileszs/ack.vim'
 Plugin 'nathanaelkane/vim-indent-guides'
 Plugin 'shougo/unite.vim'
@@ -29,6 +34,9 @@ Plugin 'Shougo/vimproc.vim'
 Plugin 'shougo/neomru.vim'
 Plugin 'Shougo/neoyank.vim'
 Plugin 'Shougo/unite-outline'
+Plugin 'xolox/vim-misc'
+Plugin 'xolox/vim-session'
+"Plugin 'pedrohdz/vim-yaml-folds'
 
 " ===================
 " end of plugins
@@ -72,8 +80,11 @@ let g:unite_source_grep_recursive_opt = ''
 	nmap    f [unite]
 	nnoremap <silent> [unite]c  :<C-u>UniteWithCurrentDir
 	        \ -buffer-name=files buffer bookmark file<CR>
-	nnoremap <silent> [unite]e  :<C-u>Unite
-	        \ -buffer-name=roles file_rec file/new -path=/home/vagrant/provisioning/ansible/roles/ file<CR>
+	nnoremap <silent> [unite]1  :<C-u>Unite
+	        \ -buffer-name=current-dir file_rec file/new file<CR>
+  nnoremap <silent> [unite]2  :<C-u>Unite	
+          \ -buffer-name=roles file/new file -path=/home/vagrant/provisioning/ansible/roles/<CR>
+	nnoremap <silent> [unite]4  :<C-u>Explore<CR>
 	nnoremap <silent> [unite]b  :<C-u>UniteWithBufferDir
 	        \ -buffer-name=files buffer bookmark file<CR>
 	nnoremap <silent> [unite]r  :<C-u>Unite
@@ -134,12 +145,3 @@ let g:unite_source_grep_recursive_opt = ''
 	  " Runs "split" action by <C-s>.
 	  imap <silent><buffer><expr> <C-s>     unite#do_action('split')
 	endfunction"}}}
-
-  " Go to last file(s) if invoked without arguments.
-autocmd VimLeave * nested if (!isdirectory($HOME . "/.vim")) |
-    \ call mkdir($HOME . "/.vim") |
-    \ endif |
-    \ execute "mksession! " . $HOME . "/.vim/Session.vim"
-
-autocmd VimEnter * nested if argc() == 0 && filereadable($HOME . "/.vim/Session.vim") |
-    \ execute "source " . $HOME . "/.vim/Session.vim"

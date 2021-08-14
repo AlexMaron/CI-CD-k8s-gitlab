@@ -9,7 +9,7 @@ set -x
 if [[ ! -f ${__home_env}/.k8s-provision ]];then
   apt-get update
   curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-  apt-get install -y git python3-pip nodejs ruby-full mono-complete golang default-jdk ack-grep cmake neovim
+  apt-get install -y git python3-pip nodejs ruby-full mono-complete golang default-jdk ack-grep cmake neovim silversearcher-ag
   gem install neovim
   curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
   python3 get-pip.py --force-reinstall
@@ -19,7 +19,7 @@ if [[ ! -f ${__home_env}/.k8s-provision ]];then
   pip3 install git+https://github.com/ansible-community/ansible-lint.git
   ansible-galaxy collection install community.general
   ansible-galaxy collection install community.kubernetes
-  git clone --recursive https://github.com/kubernetes-client/python.git /tmp && cd /tmp/python
+  git clone --recursive https://github.com/kubernetes-client/python.git /tmp/python && cd /tmp/python
   python3 setup.py install && cd -
   # Ansible community libraries end
 
@@ -56,8 +56,10 @@ if [[ ! -f ${__home_env}/.k8s-provision ]];then
   git clone https://github.com/Shougo/vimproc.vim.git
   git clone https://github.com/Shougo/neomru.vim.git
   git clone https://github.com/Shougo/neoyank.vim.git
+  git clone https://github.com/xolox/vim-misc.git
+  git clone https://github.com/xolox/vim-session.git
   cd -
-  python3 ${__home_env}/.vim/bundle/youcompleteme/install.py --go-completer
+  python3 ${__home_env}/.vim/bundle/YouCompleteMe/install.py --go-completer
   cd ${__home_env}/.vim/bundle/vimproc.vim && make && cd -
   sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
 	        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
