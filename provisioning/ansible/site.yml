@@ -1,3 +1,0 @@
----
-- import_playbook: kubernetes.yml
-- import_playbook: gitlab.yml

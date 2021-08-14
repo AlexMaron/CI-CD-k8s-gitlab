@@ -1,0 +1,33 @@
+- name: Prometheus. Add helm repo.
+  community.kubernetes.helm_repository:
+    name: prometheus-community
+    repo_url: https://prometheus-community.github.io/helm-charts
+
+- name: Prometheus. Deploy prometheus.
+  community.kubernetes.helm:
+    name: prometheus
+    chart_ref: prometheus-community/kube-prometheus-stack
+    namespace: prometheus
+    create_namespace: yes
+    update_repo_cache: yes
+    chart_version: 17.2.1
+    wait: yes
+    wait_timeout: 600s
+    values:
+      grafana:
+        adminPassword: "{{ default_password }}"
+        ingress: 
+          enabled: true
+          annotations:
+            kubernetes.io/ingress.class: nginx
+            cert-manager.io/cluster-issuer: "letsencrypt-prod"
+          hosts:
+            - grafana.alexmaron.xyz
+          tls:
+          - secretName: grafana-tls
+            hosts:
+            - grafana.alexmaron.xyz
+      prometheus:
+        service:
+          loadBalancerIP: "{{ prometheus_lb_ip }}"
+          type: LoadBalancer

@@ -26,4 +26,8 @@
     insertafter: '# IPv4 local connections:'
     line: "host keycloak keycloak 10.244.0.0/16 md5"
   when: keycloak_enabled
-  notify: restart postgres
+
+- name: restart postgres now
+  service:
+    name: postgresql
+    state: restarted

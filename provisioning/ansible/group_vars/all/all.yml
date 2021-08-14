@@ -43,3 +43,7 @@ keycloak_db: keycloak
 
 # Cert-manager
 cert_manager_enabled: true
+
+# prometheus
+prometheus_enabled: true
+prometheus_lb_ip: "192.168.88.240"
