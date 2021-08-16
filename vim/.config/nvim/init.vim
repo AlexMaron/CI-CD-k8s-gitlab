@@ -83,7 +83,9 @@ let g:unite_source_grep_recursive_opt = ''
 	nnoremap <silent> [unite]1  :<C-u>Unite
 	        \ -buffer-name=current-dir file_rec file/new file<CR>
   nnoremap <silent> [unite]2  :<C-u>Unite	
-          \ -buffer-name=roles file/new file -path=/home/vagrant/provisioning/ansible/roles/<CR>
+          \ -buffer-name=roles file file/new -path=/home/vagrant/provisioning/ansible/roles/<CR>
+	nnoremap <silent> [unite]3  :<C-u>UniteWithBufferDir
+	        \ -buffer-name=files file file/new<CR>
 	nnoremap <silent> [unite]4  :<C-u>Explore<CR>
 	nnoremap <silent> [unite]b  :<C-u>UniteWithBufferDir
 	        \ -buffer-name=files buffer bookmark file<CR>
