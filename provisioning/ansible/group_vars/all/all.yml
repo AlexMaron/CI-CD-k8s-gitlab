@@ -1,9 +1,12 @@
 ---
 # hostnames and ips
-master_ip: "192.168.88.204"
-node1_ip:  "192.168.88.201"
-node2_ip:  "192.168.88.202"
-node3_ip:  "192.168.88.203"
+subnet: "192.168.88."
+master_ip: "{{ subnet }}204"
+node1_ip:  "{{ subnet }}201"
+node2_ip:  "{{ subnet }}202"
+node3_ip:  "{{ subnet }}203"
+
+k8s-subnet: "10.244.0.0/16"
 
 master_hostname: "k8s-master"
 node1_hostname: "k8s-node1"
@@ -26,6 +29,10 @@ chrony_pool: 2.ru.pool.ntp.org
 
 # ceph
 dashboard_port: 8099
+
+# NFS provisioner
+nfs_path: "/srv/nfs/kubedata"
+
 
 # metallb
 metallb: true

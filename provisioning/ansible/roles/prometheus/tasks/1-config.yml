@@ -32,4 +32,7 @@
 
 - name: Prometheus config. Change kubernetes kube proxy listen address.
   shell:
-    cmd: k -n kube-system get cm kube-proxy -o yaml > /tmp/kube-proxy-cm.yml && sed -i 's/.*metricsBindAddress.*/    metricsBindAddress: "0.0.0.0:10249"/' /tmp/kube-proxy-cm.yml && k apply -f /tmp/kube-proxy-cm.yml
+    cmd: | 
+        k -n kube-system get cm kube-proxy -o yaml > /tmp/kube-proxy-cm.yml && \
+        sed -i 's/.*metricsBindAddress.*/    metricsBindAddress: \"0.0.0.0:10249\"/' /tmp/kube-proxy-cm.yml && \
+        k apply -f /tmp/kube-proxy-cm.yml
