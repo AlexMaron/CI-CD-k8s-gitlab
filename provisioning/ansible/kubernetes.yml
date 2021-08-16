@@ -29,13 +29,19 @@
   roles:
     - { role: postgres, tags: postgres, when: postgres_enabled|default(false) }
 
+- hosts: storage
+  tags: storages
+  become: yes
+  roles:
+    - { role: storage/ceph, tags: ceph, when: ceph_enabled|default(false) }
+    - { role: storage/nfs, tags: nfs, when: nfs_enabled|default(false) }
+
 - hosts: kubernetes_master
   tags: kubernetes_deployments
   become: yes
   roles:
     - { role: metallb, tags: metallb, when: metallb|default(true) }
     - { role: ingress-nginx, tags: ingress-nginx, when: ingress_nginx_enabled|default(true) }
-    - { role: ceph, tags: ceph, when: ceph_enabled|default(false) }
     - { role: keycloak, tags: keycloak, when: keycloak_enabled|default(false) }
     - { role: cert-manager, tags: cert-manager, when: cert_manager_enabled|default(false) }
     - { role: prometheus, tags: prometheus, when: prometheus_enabled|default(false) }
