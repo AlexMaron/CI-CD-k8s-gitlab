@@ -1,0 +1,26 @@
+- name: NFS Subdir External Provisioner. Add helm repo.
+  community.kubernetes.helm_repository:
+    state: present
+    repo_url: https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
+    name: nfs-subdir-external-provisioner
+
+- name: NFS Subdir External Provisioner. Deploy.
+  community.kubernetes.helm:
+    name: nfs-subdir-external-provisioner
+    chart_ref: nfs-subdir-external-provisioner/nfs-subdir-external-provisioner
+    namespace: nfs-provision
+    create_namespace: yes
+    values:
+      nfs:
+        server: "{{ k8s-master }}"
+        path: "{{ nfs_path }}"
+      storageClass:
+        defaultClass: true
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+
