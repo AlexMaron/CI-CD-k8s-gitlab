@@ -6,11 +6,21 @@
 192.168.88.202
 192.168.88.203
 
-[postgres]
+[postgres_master]
 192.168.88.201
+
+[postgres_standby]
+192.168.88.202
+
+[postgres:children]
+postgres_master
+postgres_standby
 
 [storage]
 192.168.88.204
+
+[kubernetes_deployments]
+192.168.88.204 ansible_python_interpreter="/usr/bin/python3"
 
 [kubernetes:children]
 kubernetes_nodes

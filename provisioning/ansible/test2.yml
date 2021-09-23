@@ -1,12 +1,39 @@
 - hosts: kubernetes_master
   become: yes
-  vars:
-    key_list:
-      - one
-      - two
-    values_list:
-      - apple
-      - orange
   tasks:
-    debug:
-      msg: "{{ dict(key_list | zip(values_list)) }}"
+    - name: find files
+      find:
+        paths: /home/vagrant/provisioning/ansible/dest2
+        patterns: '*'
+        recurse: no
+        file_type: directory
+      register: file_list
+
+    - name: find files
+      find:
+        paths: "{{ item.path }}/main"
+        patterns: '*'
+        recurse: no
+        file_type: any
+      with_items: "{{ file_list.files }}"
+      register: maindb_file_list
+
+#    - name: debug
+#      debug:
+#        var: file_list
+
+    - name: debug
+      debug:
+        msg: "{{ maindb_file_list.results | json_query('[*].files[*].path') }}"
+
+    - name: test copy
+      copy:
+        src: "{{ item.path }}"
+        dest: /home/vagrant/provisioning/ansible/dest/
+      with_items: "{{ file_list.files }}"
+
+    - name: remove dest directory
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items: "{{ maindb_file_list.results | json_query('[*].files[*].path') }}"

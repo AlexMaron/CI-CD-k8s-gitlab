@@ -6,7 +6,7 @@ node1_ip:  "{{ subnet }}201"
 node2_ip:  "{{ subnet }}202"
 node3_ip:  "{{ subnet }}203"
 
-k8s-subnet: "10.244.0.0/16"
+k8s_subnet: "10.244.0.0/16"
 
 master_hostname: "k8s-master"
 node1_hostname: "k8s-node1"
@@ -31,7 +31,9 @@ chrony_pool: 2.ru.pool.ntp.org
 dashboard_port: 8099
 
 # NFS provisioner
+nfs_enabled: true
 nfs_path: "/srv/nfs/kubedata"
+reclaimPolicy: Retain
 
 
 # metallb
@@ -42,6 +44,11 @@ ingress_nginx_enabled: true
 
 # postgres
 postgres_enabled: true
+postgres_version: 12
+postgres_fullversion: 12+214ubuntu0.1
+postgres_replication_enabled: true
+postgres_standby_1_ip: "{{ subnet }}202"
+postgres_archive_path: "/srv/archive/postgresql/data"
 
 # keycloak
 keycloak_enabled: true
@@ -54,3 +61,18 @@ cert_manager_enabled: true
 # prometheus
 prometheus_enabled: true
 prometheus_lb_ip: "192.168.88.240"
+
+# alertmanager
+alertmanager_lb_ip: "192.168.88.239"
+
+# blackbox exporter
+blackbox_enabled: false
+blackbox_ingress_1: grafana.alexmaron.xyz
+blackbox_ingress_2: test.alexmaron.xyz
+blackbox_tcp_source_ip: "238"
+
+# pushgateway
+pushgateway_enabled: true
+
+# EFK
+efk_enabled: true

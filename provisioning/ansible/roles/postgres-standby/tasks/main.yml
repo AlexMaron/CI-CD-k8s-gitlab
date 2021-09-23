@@ -1,0 +1,7 @@
+---
+# tasks file for postgres-standby
+- include: 0-install.yml
+  tags: postgres_standby_install
+
+- include: 1-configure.yml
+  tags: postgres_standby_configure

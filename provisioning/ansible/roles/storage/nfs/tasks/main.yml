@@ -2,5 +2,5 @@
 # tasks file for roles/storage/nfs
 - include: 0-install.yml
   tags: nfs_install
-- include: 1-k8s-provisioner.yml
+- include: 1-k8s-nfs-subdir-provisioner.yml
   tags: nfs_provisioner

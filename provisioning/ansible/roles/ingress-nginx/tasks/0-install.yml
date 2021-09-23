@@ -19,3 +19,11 @@
         - key: "node-role.kubernetes.io/master"
           operator: "Exist"
           effect: "NoSchedule"
+      controller:
+        metrics:
+          enabled: true
+          serviceMonitor:
+            namespace: prometheus
+            enabled: true
+            additionalLabels:
+              release: prometheus

@@ -14,13 +14,23 @@
     wait: yes
     wait_timeout: 600s
     values:
+      kubeEtcd:
+        service:
+          enabled: true
+          port: 2381
+          targetPort: 2381
+      alertmanager:
+        service:
+          loadBalancerIP: "{{ alertmanager_lb_ip }}"
+          type: LoadBalancer
       grafana:
         adminPassword: "{{ default_password }}"
         ingress: 
           enabled: true
           annotations:
             kubernetes.io/ingress.class: nginx
-            cert-manager.io/cluster-issuer: "letsencrypt-prod"
+            cert-manager.io/cluster-issuer: "letsencrypt-staging"
+            #cert-manager.io/cluster-issuer: "letsencrypt-prod"
           hosts:
             - grafana.alexmaron.xyz
           tls:
@@ -28,6 +38,35 @@
             hosts:
             - grafana.alexmaron.xyz
       prometheus:
+        resources:
+          requests:
+            memory: 400Mi
+        prometheusSpec:
+          storageSpec:
+            volumeClaimTemplate:
+              spec:
+                storageClassName: nfs-client
+                accessModes: ["ReadWriteOnce"]
+                resources:
+                  requests:
+                    storage: 8Gi
         service:
           loadBalancerIP: "{{ prometheus_lb_ip }}"
           type: LoadBalancer
+      nodeExporter:
+        resources:
+          limits:
+            cpu: 10m
+            memory: 32Mi
+          requests:
+            cpu: 10m
+            memory: 32Mi
+      prometheusOperator:
+        resources:
+          limits:
+            cpu: 200m
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+

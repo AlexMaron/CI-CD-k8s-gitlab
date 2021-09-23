@@ -36,12 +36,19 @@ Plugin 'Shougo/neoyank.vim'
 Plugin 'Shougo/unite-outline'
 Plugin 'xolox/vim-misc'
 Plugin 'xolox/vim-session'
-"Plugin 'pedrohdz/vim-yaml-folds'
+Plugin 'pedrohdz/vim-yaml-folds'
 
 " ===================
 " end of plugins
 " ===================
 call vundle#end()               " required
+
+call plug#begin('~/.vim/plugged')
+
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+"Plug 'neovim/nvim-lspconfig'
+
+call plug#end()
 filetype plugin indent on       " required
 
 
@@ -147,3 +154,5 @@ let g:unite_source_grep_recursive_opt = ''
 	  " Runs "split" action by <C-s>.
 	  imap <silent><buffer><expr> <C-s>     unite#do_action('split')
 	endfunction"}}}
+
+"autocmd BufWritePre *.go :call CocAction('runCommand', 'editor.action.organizeImport') 
