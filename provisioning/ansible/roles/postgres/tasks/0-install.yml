@@ -1,7 +1,7 @@
 - name: install postgresql
   package:
     state: present
-    name: postgresql
+    name: postgresql=12+214ubuntu0.1
 
 - name: install dependencies for ansible postgresql_user module
   package:

@@ -1,0 +1,3 @@
+---
+# tasks file for efk
+- include: 0-elasticsearch.yml

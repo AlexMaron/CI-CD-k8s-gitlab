@@ -1,0 +1,20 @@
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: mail-notification
+  labels:
+    alertmanagerConfig: mail
+spec:
+  route:
+    receiver: admin
+
+  receivers:
+  - name: admin
+    emain_configs:
+    - to: 'ikabod.zaisman@gmail.com'
+      from: 'ikabod.zaisman@gmail.com'
+      smarthost: smtp.gmail.com:587
+      auth_username: 'ikabod.zaisman@gmail.com'
+      auth_identity: 'ikabod.zaisman@gmail.com'
+      auth_password: 'njlmhfqtzecijaoo'
