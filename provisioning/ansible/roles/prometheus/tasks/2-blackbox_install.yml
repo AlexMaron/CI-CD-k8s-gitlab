@@ -1,0 +1,54 @@
+- name: Blackbox exporter. Install.
+  community.kubernetes.helm:
+    name: blackbox
+    chart_ref: prometheus-community/prometheus-blackbox-exporter
+    namespace: prometheus
+    values:
+      hostNetwork: false
+      config:
+        modules:
+          tcp_probe:
+            prober: tcp
+            tcp:
+              preferred_ip_protocol: "ip4"
+#              source_ip_address: "{{ subnet }}{{ blackbox_tcp_source_ip }}"
+          dns_grafana:
+            prober: dns
+            dns:
+              preferred_ip_protocol: ip4
+              transport_protocol: tcp
+              query_name: "grafana.alexmaron.xyz"
+          dns_prometheus:
+            prober: dns
+            dns:
+              preferred_ip_protocol: ip4
+              transport_protocol: tcp
+              query_name: "prometheus.io"
+      service:
+        type: LoadBalancer
+      serviceMonitor:
+        enabled: yes
+        defaults:
+          labels:
+            release: prometheus
+          interval: 30s
+          scrapeTimeout: 30s
+        targets:
+          - name: grafana.alexmaron.xyz         # Human readable URL that will appear in Prometheus / AlertManager
+            url: https://grafana.alexmaron.xyz  # The URL that blackbox will scrape
+            labels: {}                          # Map of labels for ServiceMonitor. Overrides value set in `defaults`
+            interval: 60s                       # Scraping interval. Overrides value set in `defaults`
+            scrapeTimeout: 60s                  # Scrape timeout. Overrides value set in `defaults`
+            module: http_2xx                    # Module used for scraping. Overrides value set in `defaults`
+            additionalMetricsRelabels: {}       # Map of metric labels and values to add
+          - name: grafana.alexmaron.xyz-tcp     # Human readable URL that will appear in Prometheus / AlertManager
+            url: grafana.alexmaron.xyz          # The URL that blackbox will scrape
+            module: tcp_probe                   # Module used for scraping. Overrides value set in `defaults`
+          - name: grafana.alexmaron.xyz-dns     # Human readable URL that will appear in Prometheus / AlertManager
+            url: 8.8.8.8                        # The URL that blackbox will scrape
+            module: dns_grafana                 # Module used for scraping. Overrides value set in `defaults`
+      prometheusRule:
+        enabled: false                                                                             
+        additionalLabels: {}                                                                       
+        namespace: ""                                                                              
+        rules: []

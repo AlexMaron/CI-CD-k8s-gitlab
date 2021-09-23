@@ -1,0 +1,43 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: custom-node-rules
+  namespace: prometheus
+  labels:
+    app: kube-prometheus-stack                                                                                                                    
+    app.kubernetes.io/instance: prometheus                                                                                                        
+    app.kubernetes.io/part-of: kube-prometheus-stack                                                                                              
+    app.kubernetes.io/version: 17.2.1
+    release: prometheus
+spec:
+  groups:
+    - name: linux-node-rules
+      rules:
+        - expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100
+          record: job:node_memory_MemAvailable:available
+
+        - expr: 100 - (avg by(instance)(irate(node_cpu_seconds_total{mode="idle"}[5m]))) * 100
+          record: job:node_cpu_seconds:utilized5m
+
+        - alert: NodeMemoryAvailableLessThan30%
+          expr: (job:node_memory_MemAvailable:available) < 30
+          for: 3m
+          labels:
+            severity: critical
+            app_type: linux
+            category: memory
+          annotations:
+            summary: Memory usage too high.
+            description: Memory usage for instance {{ $labels.instance }} has reached {{ $value }}%.
+
+        - alert: NodeCPUUsageAbove70%
+          expr: job:node_cpu_seconds:utilized5m > 70
+          for: 3m
+          labels:
+            severity: critical
+            app_type: linux
+            category: cpu
+          annotations:
+            summary: CPU usage too high.
+            description: CPU usage for instance {{ $labels.instance }} has reached {{ $value }}%.

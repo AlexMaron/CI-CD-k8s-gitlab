@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-gauge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-gauge
+  template:
+    metadata:
+      labels:
+        app: go-gauge
+    spec:
+      containers:
+      - name: go-gauge
+        image: alexmaron1/gauge:1.1
+        ports:
+        - name: web
+          containerPort: 8000
+#        readinessProbe:
+#          httpGet:
+#            port: 8000
+#            path: /birthday/test
+#          failureThreshold: 5
+#          successThreshold: 1
+#          periodSeconds: 5
+#          timeoutSeconds: 5
+#        livenessProbe:
+#          httpGet:
+#            port: 8000
+#            path: /birthday/test
+#          failureThreshold: 3
+#          successThreshold: 1
+#          periodSeconds: 5
+#          timeoutSeconds: 5
+#          initialDelaySeconds: 10
+        resources:
+          limits:
+            cpu: "0.050m"
+            memory: "10Mi"
+          requests:
+            cpu: "0.050m"
+            memory: "10Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-gauge
+  labels:
+    app: go-gauge
+spec:
+  selector:
+    app: go-gauge
+  ports:
+    - name: web
+      port: 8000
+  type: LoadBalancer

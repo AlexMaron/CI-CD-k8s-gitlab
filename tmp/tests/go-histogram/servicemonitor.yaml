@@ -1,0 +1,20 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    team: devops
+    release: prometheus
+  name: go-histogram-servicemonitor
+  namespace: prometheus
+spec:
+  endpoints:
+  - port: web
+    interval: 30s
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      #name: go-histogram-svc 
+      app: go-histogram 

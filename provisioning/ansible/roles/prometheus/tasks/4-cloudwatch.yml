@@ -1,0 +1,7 @@
+- name: Prometheus. AWS Cloadwatch deployment.
+  community.kubernetes.helm:
+    name: cloadwatch
+    chart_ref: prometheus-community/prometheus-cloudwatch-exporter
+    namespace: prometheus
+    values:
+
