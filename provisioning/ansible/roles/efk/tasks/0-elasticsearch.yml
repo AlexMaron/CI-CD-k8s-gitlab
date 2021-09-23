@@ -1,0 +1,99 @@
+- name: ELK. Add Elastic repo.
+  community.kubernetes.helm_repository:
+    name: elastic
+    repo_url: https://helm.elastic.co
+  tags: elastic-repo-add
+
+- name: ELK. ElasticSearch deploy.
+  community.kubernetes.helm:
+    name: elasticsearch
+    chart_ref: elastic/elasticsearch
+    namespace: kube-logging
+    create_namespace: yes
+    update_repo_cache: yes
+    wait: yes
+    wait_timeout: 900s
+    values:
+      volumeClaimTemplate: nfs-client
+      networkPolicy:
+        http:
+          enabled: true
+  tags: elasticsearch-deploy
+
+- name: ELK. Kibana deploy.
+  community.kubernetes.helm:
+    name: kibana
+    chart_ref: elastic/kibana
+    namespace: kube-logging
+    update_repo_cache: yes
+    wait: yes
+    wait_timeout: 900s
+    values:
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "1200Mi"
+        limits:
+          cpu: "100m"
+          memory: "1200Mi"
+      ingress:
+        enabled: true
+        annotations:
+          kubernetes.io/ingress-class: nginx
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+        hosts:
+          - host: kibana.alexmaron.xyz
+            paths:
+              - path: /
+        tls:
+          - secretName: kibana-tls
+            hosts: 
+              - kibana.alexmaron.xyz
+  tags: kibana-deploy
+
+- name: EFK. Add fluent-bit helm repo.
+  community.kubernetes.helm_repository:
+    name: fluent
+    repo_url: https://fluent.github.io/helm-charts
+
+- name: EFK. Deploy fluent-bit.
+  community.kubernetes.helm:
+    name: fluentbit
+    chart_ref: fluent/fluent-bit
+    namespace: kube-logging
+    update_repo_cache: yes
+    wait: yes
+    wait_timeout: 900s
+    values:
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: "NoSchedule"
+      filters: |
+        [FILTER]
+            Name kubernetes
+            Match kube.*
+            Merge_Log On
+            Keep_Log Off
+            K8S-Logging.Parser On
+            K8S-Logging.Exclude On
+      outputs: |
+        [OUTPUT]  
+            Name es
+            Match kube.*   
+            Host elasticsearch-master
+            Logstash_Format On
+            Trace_Error On
+            Log_Level debug
+            Replace_Dots On # When enabled, replace field name dots with underscore, required by Elasticsearch 2.0-2.3.
+            Retry_Limit False
+        [OUTPUT]   
+            Name es   
+            Match host.*
+            Host elasticsearch-master
+            Logstash_Format On
+            Logstash_Prefix node
+            Trace_Error On
+            Log_Level debug
+            Replace_Dots On # When enabled, replace field name dots with underscore, required by Elasticsearch 2.0-2.3.
+            Retry_Limit False
+    

@@ -1,0 +1,80 @@
+- name: Postgresql standby. Stop postgresql.
+  service:
+    name: postgresql
+    state: stopped
+
+- name: find postgresql version directory.
+  find:
+    paths: /var/lib/postgresql
+    patterns: '*'
+    use_regex: yes
+    recurse: no
+    file_type: directory
+  register: postgres_version_db_directory 
+
+- name: find db files in main directory.
+  find:
+    paths: "{{ item.path }}/main"
+    patterns: '*'
+    user regex: yes
+    recurse: no
+    file_type: any
+  with_items: "{{ postgres_version_db_directory.files }}"
+  register: db_files
+
+- name: Postgresql standby. Copy main db.
+  copy:
+    remote_src: yes
+    src: "{{ item.path }}"
+    dest: /tmp/postgresql/old_main/
+  with_items: "{{ postgres_version_db_directory.files }}"
+
+- name: Postgresql standby. Remove db files in main directory.
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items: "{{ db_files.results | json_query('[*].files[*].path') }}"
+
+- name: Postgresql standby. Make a backup with pg_basebackup.
+  shell: |
+    export PGPASSWORD="{{ default_password }}" && \
+    "{{ item.path }}" \
+        -h "{{ k8s_master_ip }}" \
+        -U repuser \
+        -D "{{ item }}/main" \
+        -R -P -v
+    exit 0
+  with_items: "{{ postgres_version_db_directory.files }}"
+
+- name: Postgresql standby. Recovery configuration.
+  blockinfile:
+    path: "/etc/postgresql/{{ postgres_version }}/main/postgresql.conf"
+    insertafter: ""
+    block: |
+      promote_trigger_file = '/tmp/postgresql.failover.log'
+      recovery_target_timeline = 'latest'
+      primary_conninfo = 'host=192.168.88.201 port=5432 user=repuser passfile="/var/lib/postgresql/.pgpass"'
+      restore_command = 'cp {{ postgres_archive_path }}/%f "%p"'
+      archive_cleanup_command = 'pg_archivecleanup {{ postgres_archive_path }} %r'
+
+- name: Postgresql standby. Create .pgpass file.
+  lineinfile:
+    path: /var/lib/postgresql/.pgpass
+    create: yes
+    line: "k8s-node2:5432:replication:repuser:{{ default_password }}"
+    mode: '0600'
+    owner: postgres
+    group: postgres
+  
+- name: Postgresql standby. Create archive directory.
+  file:
+    path: "{{ postgres_archive_path }}"
+    state: directory
+    mode: '0700'
+    owner: postgres
+    group: postgres
+
+- name: Postgresql standby. Start service.
+  service:
+    name: postgresql
+    state: started

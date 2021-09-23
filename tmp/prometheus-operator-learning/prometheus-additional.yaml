@@ -1,0 +1,22 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: additional-scrape-configs
+  namespace: prometheus
+stringData:
+  prometheus-additional.yaml: |
+    ## add AWS ec2 scrape
+    - job_name: "ec2"
+      ec2_sd_configs:
+        - access_key: AKIAXRC3Z33KOPRBAZGR
+          secret_key: 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
+          region: eu-central-1
+      relabel_configs:
+        - source_labels: [__meta_ec2_public_ip]
+          target_label: __address__
+          replacement: '${1}:9100'
+          action: replace
+#        - source_labels: [__meta_ec2_tag_team]
+#          regex: developers
+#          action: keep

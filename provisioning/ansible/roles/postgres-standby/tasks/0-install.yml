@@ -1,0 +1,13 @@
+- name: install postgresql
+  apt:
+    state: present
+    update_cache: yes
+    name: postgresql=12+214ubuntu0.1
+
+- name: install dependencies for ansible postgresql_user module
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python3-psycopg2
+    - acl

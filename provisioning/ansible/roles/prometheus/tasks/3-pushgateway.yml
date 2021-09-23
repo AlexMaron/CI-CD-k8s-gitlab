@@ -1,0 +1,14 @@
+- name: Prometheus. Pushgateway depoyment.
+  community.kubernetes.helm:
+    name: pushgateway
+    chart_ref: prometheus-community/prometheus-pushgateway
+    namespace: prometheus
+    values:
+      service:
+        type: LoadBalancer
+        loadBalancerIP: "{{ subnet }}237"
+      serviceMonitor:
+        enabled: true
+        namespace: prometheus
+        additionalLabels:
+          release: prometheus

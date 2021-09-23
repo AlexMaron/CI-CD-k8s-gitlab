@@ -12,10 +12,11 @@
     create_namespace: yes
     values:
       nfs:
-        server: "{{ k8s-master }}"
+        server: "{{ master_ip }}"
         path: "{{ nfs_path }}"
       storageClass:
         defaultClass: true
+        reclaimPolicy: "{{ reclaimPolicy }}"
       resources:
         limits:
           cpu: 100m
@@ -23,4 +24,3 @@
         requests:
           cpu: 100m
           memory: 128Mi
-
