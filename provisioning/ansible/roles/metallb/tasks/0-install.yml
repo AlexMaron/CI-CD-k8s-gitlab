@@ -2,6 +2,8 @@
   community.kubernetes.helm_repository:
     name: metallb
     repo_url: "https://metallb.github.io/metallb"
+  tags:
+    - upgrade_cluster_components
 
 - name: deploy MetalLB
   community.kubernetes.helm:
@@ -20,6 +22,8 @@
           protocol: layer2
           addresses:
           - 192.168.88.210-192.168.88.240
+  tags:
+    - upgrade_cluster_components
 
 #- name: MetalLB. Create a ConfigMap.
 #  community.kubernetes.k8s:

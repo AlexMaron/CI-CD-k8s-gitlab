@@ -1,0 +1,33 @@
+---
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: {{ keycloak_postgres_db_name }}
+  namespace: {{ keycloak_namespace }} 
+spec:
+  dockerImage: registry.opensource.zalan.do/acid/spilo-12:1.6-p3
+  teamId: "{{ keycloak_postgres_team_id }}"
+  spiloRunAsUser: 101
+  spiloRunAsGroup: 103
+  spiloFSGroup: 103
+  numberOfInstances: 3
+  enableLogicalBackup: false
+  logicalBackupSchedule: "0 5 * * *"
+  enableMasterLoadBalancer: false
+  enableReplicaLoadBalancer: false
+  users:
+    {{ keycloak_db_user }}:
+    - createdb
+  databases:
+    {{ keycloak_db_user }}: {{ keycloak_db }}
+  enableConnectionPooler: true
+#  patroni:
+#    pg_hba:
+  postgresql:
+    version: "12"
+    parameters:
+      shared_buffers: "32MB"
+      max_connections: "100"
+      log_statement: "all"
+  volume:
+    size: 1Gi

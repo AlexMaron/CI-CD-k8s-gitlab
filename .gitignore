@@ -11,3 +11,6 @@ provisioning/ansible/join-command
 *.swn
 k8s-master.log
 provisioning/ansible/test*
+tmp/postgres-operator
+tmp/prometheus-operator-learning
+tmp/prometheus-prod

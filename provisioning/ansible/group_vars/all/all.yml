@@ -31,7 +31,7 @@ chrony_pool: 2.ru.pool.ntp.org
 dashboard_port: 8099
 
 # NFS provisioner
-nfs_enabled: true
+#nfs_enabled: true
 nfs_path: "/srv/nfs/kubedata"
 reclaimPolicy: Retain
 
@@ -43,23 +43,30 @@ metallb: true
 ingress_nginx_enabled: true
 
 # postgres
-postgres_enabled: true
+#postgres_enabled: false
 postgres_version: 12
 postgres_fullversion: 12+214ubuntu0.1
-postgres_replication_enabled: true
+#postgres_replication_enabled: true
 postgres_standby_1_ip: "{{ subnet }}202"
 postgres_archive_path: "/srv/archive/postgresql/data"
 
+# kubernetes postgres-operator
+postgres_operator_namespace: postgres-operator
+
+
 # keycloak
-keycloak_enabled: true
+#keycloak_enabled: true
 keycloak_db_user: keycloak
 keycloak_db: keycloak
+keycloak_namespace: keycloak
+keycloak_postgres_team_id: keycloak
+keycloak_postgres_db_name: "{{ keycloak_postgres_team_id }}-postgres"
 
 # Cert-manager
-cert_manager_enabled: true
+#cert_manager_enabled: true
 
 # prometheus
-prometheus_enabled: true
+#prometheus_enabled: true
 prometheus_lb_ip: "192.168.88.240"
 
 # alertmanager
@@ -72,7 +79,7 @@ blackbox_ingress_2: test.alexmaron.xyz
 blackbox_tcp_source_ip: "238"
 
 # pushgateway
-pushgateway_enabled: true
+#pushgateway_enabled: true
 
 # EFK
-efk_enabled: true
+#efk_enabled: true

@@ -5,22 +5,33 @@
 
 - name: find postgresql version directory.
   find:
-    paths: /var/lib/postgresql
+    paths: /var/lib/postgresql/
     patterns: '*'
-    use_regex: yes
     recurse: no
     file_type: directory
   register: postgres_version_db_directory 
+  tags: postgres_find
 
 - name: find db files in main directory.
   find:
     paths: "{{ item.path }}/main"
     patterns: '*'
-    user regex: yes
     recurse: no
     file_type: any
   with_items: "{{ postgres_version_db_directory.files }}"
   register: db_files
+  tags: postgres_find
+
+- name: debug find
+  debug:
+    msg: "{{ postgres_version_db_directory.files }}"
+    verbosity: 1
+  tags: postgres_find
+- name: debug_find
+  debug:
+    msg: "{{ db_files.results | json_query('[*].files[*].path') }}"
+    verbosity: 1
+  tags: postgres_find
 
 - name: Postgresql standby. Copy main db.
   copy:

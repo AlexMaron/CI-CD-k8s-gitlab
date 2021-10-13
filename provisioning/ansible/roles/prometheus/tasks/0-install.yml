@@ -53,6 +53,7 @@
         service:
           loadBalancerIP: "{{ prometheus_lb_ip }}"
           type: LoadBalancer
+        additionalScrapeConfigs: []
       nodeExporter:
         resources:
           limits:
@@ -62,6 +63,11 @@
             cpu: 10m
             memory: 32Mi
       prometheusOperator:
+        namespaces:
+          releaseNamespace: true
+          additional:
+          - kube-system
+          - default
         resources:
           limits:
             cpu: 200m
@@ -69,4 +75,24 @@
           requests:
             cpu: 100m
             memory: 100Mi
+
+- name: Alertmanager. Create alertmanager config.
+  template:
+    src: pure-alertmanager-conf.yaml.j2
+    dest: /tmp/pure-alertmanager-conf.yaml.j2
+  tags: test444
+
+- name: Alertmanager. Encode alertmanager config.
+  command: base64 /tmp/pure-alertmanager-conf.yaml.j2
+  register: alertmanagerconfig_base64
+  tags: test444
+
+- name: Alertmanager. Create prometheus-operator manifest which contains alertmanager config.
+  lineinfile:
+    path: /tmp/pure-alertmanager-conf.yaml.j2
+    insertafter: '  alertmanager.yaml: |-'
+    line: |4 
+        "{{ alertmanagerconfig_base64 }}"
+  tags: test444
+
 
