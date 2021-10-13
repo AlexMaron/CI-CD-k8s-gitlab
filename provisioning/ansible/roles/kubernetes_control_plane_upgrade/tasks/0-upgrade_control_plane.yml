@@ -1,0 +1,80 @@
+- name: Kubernetes control plane upgrade. Check if kubeadm exists.
+  stat:
+    path: /var/lib/kubelet/config.yaml
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: kubeadm_already_run
+  tags: kubeadm_already_run_test
+
+- name: debug kubeadm_already_run
+  debug:
+    var: kubeadm_already_run
+    verbosity: 1
+  tags: kubeadm_already_run_test
+
+- name: Kubernetes control plane upgrade. Unhold kubeadm.
+  dpkg_selections:
+    name: kubeadm
+    selection: install
+  when: kubeadm_already_run.stat.exists
+
+- name: Kubernetes control plane upgrade. Upgrade kubeadm.
+  apt:
+    name: kubeadm={{ kubernetes_version }}-00
+    state: present
+    update_cache: yes
+  when: kubeadm_already_run.stat.exists
+
+- name: Kubernetes control plane upgrade. Hold kubeadm.
+  dpkg_selections:
+    name: kubeadm
+    selection: hold
+  when: kubeadm_already_run.stat.exists
+
+- name: Kubernetes control plane upgrade. Check and compare current kubeadm version with disared.
+  shell: kubeadm version -o short | tr -d 'a-zA-Z'
+  register: kubeadm_version
+  failed_when: kubeadm_version.stdout is version(kubernetes_version, 'ne')
+  when: kubeadm_already_run.stat.exists
+
+- name: Kubernetes control plane upgrade. Run kubeadm upgrade plane and write stdout to a file.
+  shell: kubeadm upgrade plan | tee -a /tmp/kubeadm_upgrade_plan.stdout
+  when: kubeadm_already_run.stat.exists
+
+- name: Kubernetes control plane upgrade. Run kubeamd upgrade apply.
+  command: timeout -k 600s 600s kubeadm upgrade apply v{{ kubernetes_version }} -y
+  when: kubeadm_already_run.stat.exists
+
+- name: Kubernetes control plane upgrade. Unhold kubelet, kubectl.
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: install
+  with_items:
+    - kubelet
+    - kubectl
+  when: kubeadm_already_run.stat.exists
+
+- name: Kubernetes control plane upgrade. Upgrade kubelet and kubectl.
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - kubelet={{ kubernetes_version }}-00
+    - kubectl={{ kubernetes_version }}-00
+  when: kubeadm_already_run.stat.exists
+
+- name: Kubernetes control plane upgrade. Hold kubelet, kubectl.
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  with_items:
+    - kubelet
+    - kubectl
+  when: kubeadm_already_run.stat.exists
+
+- name: Kubernetes control plane upgrade. Systemctl daemon-reload and restart kubelet.
+  systemd:
+    daemon-reload: yes
+  notify: kubelet restart
+  when: kubeadm_already_run.stat.exists

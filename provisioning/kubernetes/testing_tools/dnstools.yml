@@ -4,6 +4,15 @@ metadata:
   name: dnsutils
   namespace: default
 spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - k8s-node2
   containers:
   - name: dnsutils
     image: gcr.io/kubernetes-e2e-test-images/dnsutils:1.3

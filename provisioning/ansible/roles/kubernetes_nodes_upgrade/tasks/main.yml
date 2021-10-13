@@ -1,0 +1,27 @@
+---
+# tasks file for kubernetes_nodes_upgrade
+- name: Kubernetes nodes upgrade. Check if cluster has not ready resources.
+  shell: kubectl get pods -A | grep "0/[0-9]"
+  register: kube_resources_up
+  failed_when: kube_resources_up.rc == 2
+  tags:
+    - drain_node
+
+- name: Kubernetes nodes upgrade. Check version of kubelet.
+  shell: kubelet --version | tr -d '[a-zA-Z][[:space:]]'
+  register: kubelet_version_check
+
+- name: Kubernetes node upgrade. Check if kubeadm exists.
+  stat:
+    path: /var/lib/kubelet/config.yaml
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: kubeadm_already_run
+
+- name: Kubernetes node upgrade. Failed play if kubernetes resources hsa not ready state.
+  fail:
+    msg: "Kubernetes resources {{ kube_resources_up.stdout_lines }} not ready."
+
+- include: 0-upgrade_nodes.yml
+  when: kubelet_version_check.stdout is version(kubernetes_version, '<') and kubeadm_already_run.stat.exists and kube_resources_up.rc == 0

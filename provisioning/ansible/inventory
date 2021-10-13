@@ -1,27 +1,30 @@
-[kubernetes_master]
-192.168.88.204 ansible_python_interpreter="/usr/bin/python3"
+[kube_control_plane]
+k8s-master ansible_python_interpreter="/usr/bin/python3"
 
 [kubernetes_nodes]
-192.168.88.201
-192.168.88.202
-192.168.88.203
+k8s-node1
+k8s-node2
+k8s-node3
+
+[new_kubernetes_nodes]
+k8s-node5
 
 [postgres_master]
-192.168.88.201
+k8s-node1
 
 [postgres_standby]
-192.168.88.202
+k8s-node2
 
 [postgres:children]
 postgres_master
 postgres_standby
 
 [storage]
-192.168.88.204
+k8s-master
 
 [kubernetes_deployments]
-192.168.88.204 ansible_python_interpreter="/usr/bin/python3"
+k8s-master ansible_python_interpreter="/usr/bin/python3"
 
 [kubernetes:children]
 kubernetes_nodes
-kubernetes_master
+kube_control_plane

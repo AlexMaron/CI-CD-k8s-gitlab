@@ -1,0 +1,46 @@
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: kubernetes
+  namespace: {{ alertmanagerconfig_namespace }}
+  labels:
+    alertmanagerConfig: kubernetes
+spec:
+  route:
+    matchers:
+    - name: severity
+      value: (critical|warning)
+      regex: true
+    - name: alertname
+      value: Kube.*
+      regex: true
+    receiver: slack
+    repeatInterval: 12h 
+  receivers:
+  - name: slack
+    slackConfigs:
+    - apiURL:
+        key: slack-webhook
+        name: prometheus-slack-kubernetes
+      channel: '{{ slack_channel }}'
+      username: '{{ slack_username }}'
+      color: '#2eb886'
+      title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] Monitoring Event Notification' 
+      text: |-
+          {{ range .Alerts }}
+            *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
+            *Description:* {{ .Annotations.description }}
+            *Graph:* <{{ .GeneratorURL }}|:chart_with_upwards_trend:> *Runbook:* <{{ .Annotations.runbook }}|:spiral_note_pad:>
+            *Details:*
+            {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+            {{ end }}
+          {{ end }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: prometheus-slack-kubernetes
+  namespace: cert-manager
+stringData:
+  slack-webhook: "{{ slack_webhook }}"
