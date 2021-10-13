@@ -1,0 +1,6 @@
+---
+# tasks file for kubernetes_master
+- include: 0-install_kubernetes.yml
+- include: 1-configure_system.yml
+- include: 2-configure_kubernetes.yml
+- include: 3-apply_calico_and_other.yml

@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-pod-config
+  namespace: default
+data:
+  # Enable to turn backups on.
+  BACKUP_NUM_TO_RETAIN: '5'
+  BACKUP_SCHEDULE: '00 01 * * *'
+  AWS_ACCESS_KEY_ID: '{{ postgres_backup_s3_access_key_id }}'
+  AWS_SECRET_ACCESS_KEY: '{{ postgres_backup_s3_secret_key }}'
+  AWS_REGION: '{{ postgres_backup_s3_region }}'
+  WAL_S3_BUCKET: '{{ postgres_backup_WAL_S3_BUCKET }}'
+  WALG_DELTA_MAX_STEPS: '7'
+  WALG_COMPRESSION_METHOD: 'brotli'
+  WALG_DOWNLOAD_CONCURRENCY: '1'
+  USE_WALG_BACKUP: "true"
+  USE_WALG_RESTORE: "true"

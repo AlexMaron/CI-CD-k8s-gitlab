@@ -10,32 +10,43 @@ if [[ ! -f /home/vagrant/.main-provision ]];then
   sed -i 's/^#.*StrictHostKeyChecking ask/    StrictHostKeyChecking no/' /etc/ssh/ssh_config
 fi
 
-  # Add ssh key user to vagrant user
-  if [[ ! -f $HOME_DIR/.ssh/id_rsa ]];then
-    if [[ ! -d $HOME_DIR/.ssh ]];then
-      mkdir -p $HOME_DIR/.ssh
-    fi
-    cp /vagrant/ssh_key/* $HOME_DIR/.ssh/
+# Add ssh key user to vagrant user
+if [[ ! -f $HOME_DIR/.ssh/id_rsa ]];then
+  if [[ ! -d $HOME_DIR/.ssh ]];then
+    mkdir -p $HOME_DIR/.ssh
   fi
-  chmod 644 $HOME_DIR/.ssh/id_rsa.pub
-  chmod 600 $HOME_DIR/.ssh/id_rsa
-  chown vagrant:vagrant $HOME_DIR/.ssh/*
-  if [[ $(cat /vagrant/ssh_key/id_rsa.pub | xargs -I {} grep {} ~/.ssh/authorized_keys | wc -l) -eq 0 ]];then 
-    cat /vagrant/ssh_key/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys
+  cp /vagrant/ssh_key/* $HOME_DIR/.ssh/
+fi
+chmod 644 $HOME_DIR/.ssh/id_rsa.pub
+chmod 600 $HOME_DIR/.ssh/id_rsa
+chown vagrant:vagrant $HOME_DIR/.ssh/*
+if [[ $(cat /vagrant/ssh_key/id_rsa.pub | xargs -I {} grep {} ~/.ssh/authorized_keys | wc -l) -eq 0 ]];then 
+  cat /vagrant/ssh_key/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys
+fi
+
+# Add ssh keys to root user
+if [[ ! -f /root/.ssh/id_rsa ]];then
+  if [[ ! -d /root/.ssh ]];then
+    mkdir -p /root/.ssh
   fi
-  
-  # Add ssh keys to root user
-  if [[ ! -f /root/.ssh/id_rsa ]];then
-    if [[ ! -d /root/.ssh ]];then
-      mkdir -p /root/.ssh
-    fi
-    cp /vagrant/ssh_key/* /root/.ssh/
-  fi
-  chmod 644 /root/.ssh/id_rsa.pub
-  chmod 600 /root/.ssh/id_rsa
-  if [[ $(cat /vagrant/ssh_key/id_rsa.pub | xargs -I {} grep {} /root/.ssh/authorized_keys | wc -l) -eq 0 ]];then 
-    cat /vagrant/ssh_key/id_rsa.pub >> /root/.ssh/authorized_keys; 
-  fi
+  cp /vagrant/ssh_key/* /root/.ssh/
+fi
+chmod 644 /root/.ssh/id_rsa.pub
+chmod 600 /root/.ssh/id_rsa
+if [[ $(cat /vagrant/ssh_key/id_rsa.pub | xargs -I {} grep {} /root/.ssh/authorized_keys | wc -l) -eq 0 ]];then 
+  cat /vagrant/ssh_key/id_rsa.pub >> /root/.ssh/authorized_keys; 
+fi
+
+if [[ $(cat /etc/hosts | grep '# SHELL SCRIPT BLOCK START #' | wc -l) -eq 0 ]];then
+  echo -e "# SHELL SCRIPT BLOCK START #
+192.168.88.204 k8s-master k8s-master
+192.168.88.201 k8s-node1 k8s-node1
+192.168.88.202 k8s-node2 k8s-node2
+192.168.88.203 k8s-node3 k8s-node3
+192.168.88.205 k8s-node5 k8s-node5
+# SHELL SCRIPT BLOCK END #" | tee -a /etc/hosts;fi
+
+
 
 ## LVM2 configuration
 

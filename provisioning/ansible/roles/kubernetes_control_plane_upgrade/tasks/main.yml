@@ -1,0 +1,3 @@
+---
+# tasks file for kubernetes_upgrade
+- include: 0-upgrade_control_plane.yml

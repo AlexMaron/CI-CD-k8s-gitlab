@@ -1,9 +1,109 @@
+- name: Keycloak. Check if postgres operator deployed in kubernetes cluster.
+  command: kubectl get crd postgresqls.acid.zalan.do 
+  register: postgres_operator_exists
+  failed_when: postgres_operator_exists.rc == 2
+
+- name: Keycloak. Check if postgres cluster already exists.
+  command: kubectl get postgresqls.acid.zalan.do -n {{ keycloak_namespace }}
+  register: postgres_database_exists
+  failed_when: postgres_database_exists.rc == 2
+
+- name: Keycloak. Create k8s manifest of database for keycloak using zalando postgres operator.
+  template:
+    src: postgres-operator-db.yml.j2
+    dest: /tmp/postgres-operator-db.yml
+  when: postgres_operator_exists.rc == 0 and postgres_database_exists.rc != 0
+
+- name: Keycloak. Deploy postgresql database cluster with pooler for testing purpose.
+  command: kubectl create namespace {{ keycloak_namespace }} 
+  when: postgres_operator_exists.rc == 0 and postgres_database_exists.rc != 0
+
+- name: Keycloak. Deploy postgresql database cluster with pooler for testing purpose.
+  command: kubectl apply -f /tmp/postgres-operator-db.yml
+  when: postgres_operator_exists.rc == 0 and postgres_database_exists.rc != 0
+
+- name: Keycloak. Check status of postgresql cluster until status change to Running.
+  command: kubectl get postgresqls.acid.zalan.do keycloak-postgres -ojsonpath='{.status.PostgresClusterStatus}'
+  register: keycloak_postgres_status
+  until: keycloak_postgres_status.stdout.find("Running") != -1
+  retries: 10
+  delay: 30
+  when: postgres_operator_exists.rc == 0 and postgres_database_exists.rc != 0
+
+- name: Keycloak. Get postgresql keycloak role password.
+  shell:
+    cmd: >-
+      kubectl get secrets -n {{ keycloak_namespace }} keycloak.keycloak-postgres.credentials.postgresql.acid.zalan.do -ojsonpath='{.data.password}' |
+      base64 -d
+  register: postgresql_keycloak_password
+  when: postgres_operator_exists.rc == 0
+  tags: test555
+
+- name: debug password
+  debug:
+    var: postgresql_keycloak_password
+  when: postgres_operator_exists.rc == 0
+  tags: test555
+
+- name: Keycloak. Get keycloak database dns name
+  shell:
+    cmd: kubectl get svc -n {{ keycloak_namespace }} -l cluster-name={{ keycloak_postgres_db_name }} -l connection-pooler -ojsonpath='{.items[].metadata.name}'
+  register: postgresql_keycloak_pooler_dns_name
+  when: postgres_operator_exists.rc == 0
+  tags: test555
+
+- name: debug dns name
+  debug:
+    var: postgresql_keycloak_pooler_dns_name
+  when: postgres_operator_exists.rc == 0
+  tags: test555
+
 - name: Keycloak. Add helm repo.
   become: true
   become_user: vagrant
   community.kubernetes.helm_repository:
     name: bitnami
     repo_url: https://charts.bitnami.com/bitnami
+
+- name: Keycloak. Deploy.
+  become: true
+  become_user: vagrant
+  community.kubernetes.helm:
+    name: keycloak
+    chart_ref: bitnami/keycloak
+    namespace: "{{ keycloak_namespace }}"
+    create_namespace: yes
+    wait: yes
+    wait_timeout: 600s
+    values:
+      auth:
+        adminUser: admin
+        adminPassword: "{{ default_password }}"
+        managementPassword: "{{ default_password }}"
+      proxyAddressForwarding: true
+      service:
+        type: NodePort
+      ingress:
+        enabled: true
+        hostname: keycloak.alexmaron.xyz
+        annotations:
+          kubernetes.io/ingress.class: "nginx"
+          cert-manager.io/cluster-issuer: "letsencrypt-prod"
+        tls: true
+      postgresql:
+        enabled: false
+      externalDatabase:
+        host: "{{ postgresql_keycloak_pooler_dns_name.stdout }}"
+        user: keycloak
+        password: "{{ postgresql_keycloak_password.stdout }}"
+        database: keycloak
+  register: debug_keycloak
+  when: postgres_operator_exists.rc == 0
+
+- name: debug
+  debug:
+    var: debug_keycloak
+  when: postgres_operator_exists.rc == 0
 
 - name: Keycloak. Deploy.
   become: true
@@ -38,7 +138,4 @@
         password: "{{ default_password }}"
         database: keycloak
   register: debug_keycloak
-
-- name: debug
-  debug:
-    var: debug_keycloak
+  when: postgres_operator_exists.rc != 0

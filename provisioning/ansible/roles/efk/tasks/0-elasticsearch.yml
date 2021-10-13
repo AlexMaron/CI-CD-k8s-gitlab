@@ -12,12 +12,13 @@
     create_namespace: yes
     update_repo_cache: yes
     wait: yes
-    wait_timeout: 900s
+    wait_timeout: 1200s
     values:
-      volumeClaimTemplate: nfs-client
-      networkPolicy:
-        http:
-          enabled: true
+      volumeClaimTemplate:
+        storageClassName: "nfs-client"
+#      networkPolicy:
+#        http:
+#          enabled: true
   tags: elasticsearch-deploy
 
 - name: ELK. Kibana deploy.

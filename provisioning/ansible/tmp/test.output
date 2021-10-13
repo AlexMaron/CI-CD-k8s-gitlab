@@ -1,0 +1,2 @@
+NAMESPACE  NAME           TEAM  VERSION  PODS  VOLUME  CPU-REQUEST  MEMORY-REQUEST  AGE    STATUS
+default    acid-postgres  acid  12       3     8Gi     400m         400Mi           3h37m  Running

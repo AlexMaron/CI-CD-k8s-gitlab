@@ -1,3 +1,12 @@
+- name: Check if node joined to the cluster.
+  stat:
+    path: /var/lib/kubelet/config.yaml
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: kubeadm_already_joined
+  tags: join_node
+
 - name: Configure node ip
   lineinfile:
     path: /etc/default/kubelet
@@ -50,8 +59,22 @@
     - never
     - clean_cluster
 
+- name: Generate join command
+  command: kubeadm token create --print-join-command
+  register: join_command
+  delegate_to: "{{ groups['kube_control_plane'][0] }}"
+  tags: join_node
+
+- name: Copy join command to local file
+  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command" mode='0644'
+  delegate_to: "{{ groups['kube_control_plane'][0] }}"
+  tags: join_node
+
 - name: Copy the join command to server location
   copy: src=join-command dest=/tmp/join-command.sh mode=0777
+  tags: join_node
 
 - name: Join the nodes to cluster
   command: sh /tmp/join-command.sh
+  when: not kubeadm_already_joined.stat.exists
+  tags: join_node

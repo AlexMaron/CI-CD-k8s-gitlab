@@ -1,0 +1,6 @@
+---
+# handlers file for kubernetes_upgrade
+- name: kubelet restart
+  service:
+    name: kubelet
+    state: restarted

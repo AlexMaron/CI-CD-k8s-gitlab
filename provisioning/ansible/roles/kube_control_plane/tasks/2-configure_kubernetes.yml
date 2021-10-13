@@ -1,0 +1,91 @@
+- name: Kubeadm init check.
+  stat:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: kubeadm_already_init
+
+- name: Configure node ip
+  lineinfile:
+    path: /etc/default/kubelet
+    line: KUBELET_EXTRA_ARGS=--node-ip={{ inventory_hostname }}
+    create: yes
+
+- name: restart kubelet
+  service:
+    name: kubelet      
+    daemon_reload: yes 
+    state: restarted
+    
+- name: kubeadm reset
+  shell: |
+    set -o pipefail
+    yes | kubeadm reset
+  args:
+    executable: /bin/bash
+  tags: 
+    - never
+    - clean_cluster
+  
+- name: get kubernetes version
+  shell:
+    cmd: kubectl version --client --short | tr -cd '[0-9.]'
+  register: kubernetes_version
+
+- name: kubernetes initialize
+  command: >- 
+    kubeadm init 
+    --apiserver-advertise-address={{ ansible_ssh_host }} 
+    --apiserver-cert-extra-sans={{ ansible_ssh_host }}
+    --node-name {{ master_hostname }}
+    --pod-network-cidr={{ ip_netmask }}
+    --kubernetes-version stable-{{ short_kubernetes_version }}
+  when: not kubeadm_already_init.stat.exists
+
+- name: create .kube directory to vagrant user
+  file:
+    path: "{{ home_env }}/.kube"
+    state: directory
+    owner: "{{ username_uid }}"
+    group: "{{ username_gid }}"
+
+- name: add kubeadm config to vagrant user
+  file:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ home_env }}/.kube/config"
+    state: hard
+    mode: '0600'
+    owner: "{{ username_uid }}"
+    group: "{{ username_gid }}"
+
+- name: create .kube directory to root user
+  file:
+    path: /root/.kube
+    state: directory
+
+- name: add kubeadm config to root user
+  file:
+    src: /etc/kubernetes/admin.conf
+    dest: /root/.kube/config
+    state: hard
+    mode: '0600'
+
+- name: create kubectl completion
+  shell: 
+    cmd: kubectl completion bash > {{ kubectl_complete_config }}
+
+- name: adding alias from kubectl into .bashrc
+  lineinfile:
+    path: "{{ home_env }}/.bashrc"
+    line: "alias k=kubectl"
+
+- name: adding completion config to .bashrc
+  lineinfile:
+    path: "{{ home_env }}/.bashrc"
+    line: "{{ kubectl_complete_source }}"
+
+- name: modify .bashrc
+  lineinfile:
+    path: "{{ home_env }}/.bashrc"
+    line: "export KUBECONFIG={{ home_env }}/.kube/config"

@@ -49,6 +49,13 @@ BOX                       = "bento/ubuntu-20.04"
       :ip => "#{SUBNET}203",
       :ssh_port => '2213',
       :persistent_data => "~/vagrant/persistent_disk/k8s-node3.vdi",
+    },
+    {
+      :hostname => "k8s-node5",
+      :box => BOX,
+      :ip => "#{SUBNET}205",
+      :ssh_port => '2215',
+      :persistent_data => "~/vagrant/persistent_disk/k8s-node5.vdi",
     }
   ]
 
