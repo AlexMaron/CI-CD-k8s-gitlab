@@ -1,0 +1,40 @@
+- name: Deploy Postgres operator. Helm deploy.
+  community.kubernetes.helm:
+    name: postgres-operator
+    chart_ref: https://github.com/zalando/postgres-operator/blob/master/charts/postgres-operator/postgres-operator-1.7.0.tgz
+    namespace: {{ postgres_operator_namespace }}
+    create_namespace: yes
+    values:
+      configKubernetes:
+        enable_pod_antiaffinity: true
+        pod_environment_configmap: "{{ postgres_namespace }}/postgres-pod-config"
+        spilo_runasuser: 101
+        spilo_runasgroup: 103
+        spilo_fsgroup: 103
+      configAwsOrGcp:
+        aws_region: "{{ postgres_backup_s3_region }}"
+        wal_s3_bucket: "{{ postgres_backup_WAL_S3_BUCKET }}"
+      configLogicalBackup:
+        logical_backup_provider: "s3"
+        # S3 Access Key ID
+        logical_backup_s3_access_key_id: "{{ postgres_backup_s3_access_key_id }}"
+        # S3 bucket to store backup results
+        logical_backup_s3_bucket: "{{ postgres_logic_backup_s3_bucket }}"
+        # S3 region of bucket
+        logical_backup_s3_region: "{{ postgres_backup_s3_region }}"
+        # S3 endpoint url when not using AWS
+        logical_backup_s3_endpoint: ""
+        # S3 Secret Access Key
+        logical_backup_s3_secret_access_key: "{{ postgres_backup_s3_secret_key }}"
+        # S3 server side encryption
+        logical_backup_s3_sse: "AES256"
+        # backup schedule in the cron format
+        logical_backup_schedule: "30 00 * * *"
+
+- name: Postgres-operator. Create configmap manifest for walg backup on AWS S3.
+  template:
+    src: postgres-configmap.yaml.j2
+    dest: /tmp/postgres-configmap.yaml
+
+- name: Postgres-operator. Apply configmap for walg backup on AWS S3.
+  command: kubectl apply -f /tmp/postgres-configmap.yaml

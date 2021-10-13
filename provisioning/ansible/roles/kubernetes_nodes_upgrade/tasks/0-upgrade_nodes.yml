@@ -1,0 +1,152 @@
+- name: Kubernetes node upgrade. Check if kubernetes cluster contains pdb there ALLOWED DISRUPTIONS equal zero.
+  shell:
+    cmd: kubectl get pdb -A | awk -F'[[:space:]][[:space:]]+' '{print $5}' | grep 0
+  delegate_to: "{{ groups['kube_control_plane'][0] }}"
+  failed_when: allowed_disruptions_zero.rc == 2
+  register: allowed_disruptions_zero
+  tags:
+    - drain_node
+
+- name: Kubernetes node upgrade. Check if postgres operator exists and get databases names.
+  shell:
+    cmd: >-
+      kubectl get postgresqls.acid.zalan.do -A |
+      awk -F'[[:space:]][[:space:]]+' '{print $2}' |
+      sed -n '2,1000p' | 
+      xargs -I {} /bin/bash -c 'kubectl get pods -A | grep {}'
+  delegate_to: "{{ groups['kube_control_plane'][0] }}"
+  register: postgresql_databases_exists
+  failed_when: postgresql_databases_exists.rc == 2
+  tags: 
+    - postgresql_databases_exists
+    - drain_node
+
+- name: Kubernetes node upgrade. Display postgreql database names.
+  debug:
+    msg: "{{ postgresql_databases_exists }}"
+  when: postgresql_databases_exists.rc == 0
+  tags: 
+    - postgresql_databases_exists
+    - drain_node
+
+- name: Kubernetes node upgrade. Confirm upgrading nodes if ALLOWED DISRUPTIONS with zero value or postgresql databases found.
+  pause:
+    prompt: Kubernetes node upgrade. WARN. ALLOWED DISRUPTIONS may cause drain error. Type ENTER to continue or CTRL+C to corrupt execution.
+  when: allowed_disruptions_zero.rc == 0
+  tags:
+    - drain_node
+
+- name: Kubernetes node upgrade. Confirm upgrading nodes if postgresql database found. Type ENTER to continue or CTRL+C to corrupt execution.
+  pause:
+    prompt: Kubernetes node upgrade. WARN. ALLOWED DISRUPTIONS may cause drain error.
+  when: '"No resources found" not in postgresql_databases_exists.stderr_lines'
+  tags:
+    - drain_node
+
+- name: Kubernetes node upgrade. Taint node for postgres masters. (1/2)
+  shell:
+    cmd: >-
+      kubectl get pods -owide -l application=spilo -L spilo-role |
+      grep master |
+      awk -F'[[:space:]][[:space:]]+' '{print $7}' |
+      grep {{ inventory_hostname }}
+  delegate_to: "{{ groups['kube_control_plane'][0] }}"
+  failed_when: postgresql_nodes.rc == 2
+  tags: 
+    - taint_postgresql_nodes
+    - untaint_postgresql_nodes
+    - drain_node
+  register: postgresql_nodes
+
+- name: Kubernetes node upgrade. Debud taint postgres master nodes.
+  debug:
+    msg: "{{ postgresql_nodes.stdout_lines }} {{ postgresql_nodes.rc }}"
+    verbosity: 1
+  tags: 
+    - taint_postgresql_nodes
+    - drain_node
+
+- name: Kubernetes node upgrade. Taint node for postgres masters. (2/2)
+  shell: kubectl taint nodes {{ postgresql_nodes.stdout_lines[0] }} postgres=:NoExecute
+  delegate_to: "{{ groups['kube_control_plane'][0] }}"
+  when: postgresql_nodes.rc == 0
+  tags: 
+    - taint_postgresql_nodes
+    - drain_node
+
+- name: Kubernetes node upgrade. Unhold kubeadm.
+  dpkg_selections:
+    name: kubeadm
+    selection: install
+
+- name: Kubernetes node upgrade. Upgrade kubeadm.
+  apt:
+    name: kubeadm={{ kubernetes_version }}-00
+    state: present
+    update_cache: yes
+
+- name: Kubernetes node upgrade. Hold kubeadm.
+  dpkg_selections:
+    name: kubeadm
+    selection: hold
+
+- name: Kubernetes node upgrade. Check and compare current kubeadm version with disared.
+  shell: kubeadm version -o short | tr -d 'a-zA-Z'
+  register: kubeadm_version
+  failed_when: kubeadm_version.stdout is version(kubernetes_version, 'ne')
+
+- name: Kubernetes node upgrade. Run kubeamd upgrade node.
+  command: kubeadm upgrade node
+
+- name: Kubernetes node upgrade. Drain node.
+  command: "timeout -k 600s 600s kubectl drain {{ inventory_hostname }} --ignore-daemonsets --delete-emptydir-data --force"
+  delegate_to: "{{ groups['kube_control_plane'][0] }}"
+  tags:
+    - drain_node
+
+- name: Kubernetes node upgrade. Unhold kubelet, kubectl.
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: install
+  with_items:
+    - kubelet
+
+- name: Kubernetes node upgrade. Upgrade kubelet and kubectl.
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - kubelet={{ kubernetes_version }}-00
+
+- name: Kubernetes node upgrade. Hold kubelet, kubectl.
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  with_items:
+    - kubelet
+
+- name: Kubernetes node upgrade. Systemctl daemon-reload.
+  systemd:
+    daemon-reload: yes
+  notify: kubelet restart
+
+- name: Kubernetes node upgrade. Uncordon node.
+  command: "kubectl uncordon {{  inventory_hostname }}"
+  delegate_to: localhost
+
+- name: Kubernetes node upgrade. Untaint node for postgres masters.
+  shell:
+    cmd: kubectl taint nodes {{ postgresql_nodes.stdout_lines }} postgres=:NoExecute-
+  when: postgresql_nodes.rc == 0
+  delegate_to: "{{ groups['kube_control_plane'][0] }}"
+  tags: 
+    - untaint_postgresql_nodes
+
+- name: Kubernetes node upgrade. Wait when all pods up and running.
+  shell:
+    cmd: kubectl get pods -A | grep "0/[0-9]"
+  register: kube_resources_up
+  until: kube_resources_up.rc == 0
+  retries: 50
+  delay: 10
+  failed_when: kube_resources_up.rc == 2

@@ -5,5 +5,5 @@ metadata:
 spec:
   containers:
     - name: curl
-      image: curlimages/curl
+      image: curlimages/curl1212
       command: [ "sleep", "600" ]

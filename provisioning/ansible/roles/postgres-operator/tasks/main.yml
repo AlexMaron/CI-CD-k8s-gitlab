@@ -1,0 +1,4 @@
+---
+# tasks file for postgres-operator
+- include: 0-deploy.yml
+  tags: postgres-operator-deploy
