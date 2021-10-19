@@ -1,6 +1,0 @@
----
-# handlers file for gitlab_omnibus
-- name: restart postfix
-  service:
-    name: postfix
-    state: restarted

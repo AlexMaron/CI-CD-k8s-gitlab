@@ -1,37 +1,10 @@
 ---
-- hosts: all
+- hosts: etcd
   become: yes
   gather_facts: true
   tasks:
-    - name: get hostname
-      command: hostname
-      register: hostnames
-
-    - name: debug
+    - name: test
       debug:
-        msg: "{{ ansible_play_hosts | map('extract', hostvars, 'hostnames') | map(attribute='stdout') | list }}"
-      register: ansible_hostnames
-      run_once: yes
-
-    - name: show one host
-      debug:
-        msg: "{{ ansible_hostnames.msg[1] }}"
-      run_once: yes
-
-    - name: file
-      copy:
-        content: "{{ ansible_hostnames }}"
-        dest: ansible_hostnames
-        force: yes
-- hosts: kubernetes_master
-  become: yes
-  vars:
-    pool_hostnames: "{{ lookup('file', '/home/vagrant/ansible_hostnames') | from_json }}"
-  tasks:
-    #- name: get value from file
-    #   set_fact: 
-    #    hostnames: "{{ input.msg }}"
-
-    - name: print out msg
-      debug:
-        msg: "{{ pool_hostnames.msg[3] }}"
+        msg: "{{ group_names | regex_search('etcd') }}"
+      delegate_to: "{{ groups['postgres'][0] }}"
+      run_once: true

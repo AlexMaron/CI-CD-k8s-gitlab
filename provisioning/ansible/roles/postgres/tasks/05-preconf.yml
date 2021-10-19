@@ -1,0 +1,27 @@
+- name: Postgresql standby. Allow LAN access.
+  lineinfile:
+    path: /etc/postgresql/12/main/pg_hba.conf
+    insertafter: '# IPv4 local connections:'
+    line: "host all all {{ subnet }}0/24 md5"
+
+- name: Postgresql standby. Open postgresql port.
+  replace:
+    path: /etc/postgresql/12/main/postgresql.conf
+    regexp: "#listen_addresses = 'localhost'"
+    replace: "listen_addresses = 'localhost, {{ ansible_all_ipv4_addresses | regex_search('192.168.[0-9]{1,3}.[-9]{1,3}') }}'"
+
+- name: allow CNI access to postgres for keycloak user.
+  lineinfile:
+    path: /etc/postgresql/12/main/pg_hba.conf
+    insertafter: '# IPv4 local connections:'
+    line: "host keycloak keycloak {{ k8s-subnet }} md5"
+
+- name: allow CNI access to postgres for repuser
+  blockinfile:
+    path: /etc/postgresql/12/main/pg_hba.conf
+    insertafter: '# IPv4 local connections:'
+    block: |-
+        host replication repuser {{ groups['postgres_standby'][0] }} md5  
+        host replication repuser {{ groups['postgres_standby'][1] }} md5  
+  tags: postgres_replication_config
+
