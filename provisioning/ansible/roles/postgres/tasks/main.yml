@@ -2,8 +2,17 @@
 # tasks file for roles/postgres
 - include: 0-install.yml
   tags: postgres_install
+- include: 05-preconf.yml
+  tags: postgres_install
 - include: 1-config.yml
+  when: groups.postgres[0] == inventory_hostname
   tags: postgres_config
 - include: 2-keycloak.yml
   tags: postgres_keycloak
-  when: keycloak_enabled
+  when: keycloak_enabled|default(false) and groups.postgres[0] == inventory_hostname
+- include: 3-gitlab.yml
+  tags: postgres_gitlab
+  when: gitlab_enabled|default(false) and groups.postgres[0] == inventory_hostname
+- include: 4-install-replica.yml
+  when: groups.postgres[0] != inventory_hostname
+  tags: postgres_replica_install

@@ -1,9 +1,12 @@
-- hosts: all
-  serial: 1
-  order: reverse_sorted
-  gather_facts: false
+- hosts: etcd
+#  serial: 1
+#  order: reverse_sorted
+  gather_facts: true
   become: yes
   tasks:
-    - name: debug
+    - name: test
       debug:
-        var: inventory_hostname
+        msg: |
+          {% for host in groups['etcd'] %}
+          {{ hostvars[host]['ansible_eth1']['ipv4']['address'] }} {{ host }} {{ host }}
+          {% endfor %}

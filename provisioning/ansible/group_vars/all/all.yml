@@ -42,12 +42,20 @@ metallb: true
 # ingress-nginx
 ingress_nginx_enabled: true
 
+# etcd
+etcd_node0_ip: "192.168.88.201"
+etcd_node1_ip: "192.168.88.202"
+etcd_node2_ip: "192.168.88.203"
+
+
 # postgres
 #postgres_enabled: false
 postgres_version: 12
+postgres_node0_ip: "192.168.88.201"
+postgres_node1_ip: "192.168.88.202"
+postgres_node2_ip: "192.168.88.203"
 postgres_fullversion: 12+214ubuntu0.1
-#postgres_replication_enabled: true
-postgres_standby_1_ip: "{{ subnet }}202"
+postgres_replication_enabled: true
 postgres_archive_path: "/srv/archive/postgresql/data"
 
 # kubernetes postgres-operator
@@ -55,12 +63,17 @@ postgres_operator_namespace: postgres-operator
 
 
 # keycloak
-#keycloak_enabled: true
+keycloak_enabled: true
 keycloak_db_user: keycloak
 keycloak_db: keycloak
 keycloak_namespace: keycloak
 keycloak_postgres_team_id: keycloak
 keycloak_postgres_db_name: "{{ keycloak_postgres_team_id }}-postgres"
+
+# gitlab
+gitlab_enabled: true
+gitlab_db_user: gitlab
+gitlab_db: gitlabhq_production
 
 # Cert-manager
 #cert_manager_enabled: true
