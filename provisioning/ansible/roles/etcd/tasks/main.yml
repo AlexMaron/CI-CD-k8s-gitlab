@@ -1,0 +1,4 @@
+---
+# tasks file for etcd
+- include: 0-install.yml
+  tags: etcd-install
