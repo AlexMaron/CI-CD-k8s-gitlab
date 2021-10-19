@@ -1,0 +1,16 @@
+- name: Postgresql. Create gitlab database user.
+  postgresql_user:
+    login_host: "{{ node1_ip }}"
+    login_user: postgres
+    login_password: "{{ default_password }}"
+    name: "{{ gitlab_db_user }}"
+    password: "{{ default_password }}"
+    role_attr_flags: CREATEDB,NOSUPERUSER
+
+- name: Postgresql. Create gitlab database.
+  postgresql_db:
+    login_host: "{{ node1_ip }}"
+    login_user: postgres
+    login_password: "{{ default_password }}"
+    name: "{{ gitlab_db }}"
+    owner: "{{ gitlab_db_user }}"

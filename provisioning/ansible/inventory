@@ -14,10 +14,16 @@ k8s-node1
 
 [postgres_standby]
 k8s-node2
+k8s-node3
 
 [postgres:children]
 postgres_master
 postgres_standby
+
+[etcd]
+k8s-node1
+k8s-node2
+k8s-node3
 
 [storage]
 k8s-master

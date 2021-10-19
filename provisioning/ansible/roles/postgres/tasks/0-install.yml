@@ -1,3 +1,20 @@
+- name: Postgresql. Get ubunty release.
+  command: lsb_release -cs
+  register: lsb_release
+  tags: postgres_add_repo
+
+- name: Postgres. Add apt postgresql repo key.
+  apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
+  tags: postgres_add_repo
+
+- name: Postgresql. Add postgresql repository.
+  apt_repository: 
+    repo: deb http://apt.postgresql.org/pub/repos/apt {{ lsb_release.stdout }}-pgdg main
+    state: present
+  tags: postgres_add_repo
+
 - name: install postgresql
   package:
     state: present
