@@ -1,0 +1,47 @@
+#- name: Postgresql. Create default user password.
+#  become: true
+#  become_method: sudo
+#  become_user: postgres
+#  postgresql_user:
+#    db: postgres
+#    name: postgres
+#    password: "{{ default_password }}"
+#    state: present
+
+#- name: Postgresql. Create replication user.
+#  become: true
+#  become_method: sudo
+#  become_user: postgres
+#  postgresql_user:
+#    name: repuser
+#    password: "{{ default_password }}"
+#    role_attr_flags: REPLICATION
+#  tags: 
+#    - postgres_replication_config
+#    - postgres_create_replication_user
+
+#- name: Postgresql. Set up streaming replication on primary server.
+#  blockinfile:
+#    path: /etc/postgresql/12/main/postgresql.conf
+#    insertafter: '#wal_level = .*'
+#    block: | 
+#          wal_level = replica
+#          max_wal_senders = 5
+#          wal_keep_segments = 32
+#          archive_mode = on
+#          archive_command = 'cp %p /srv/archive/postgresql/data/%f'
+#  tags: postgres_replication_config
+
+#- name: Postgresql. Create directory for archive.
+#  file:
+#    path: "{{ postgres_archive_path }}"
+#    state: directory
+#    mode: '0700'
+#    owner: postgres
+#    group: postgres
+
+- name: restart postgres now
+  service:
+    name: postgresql
+    state: restarted
+  tags: postgres_restart

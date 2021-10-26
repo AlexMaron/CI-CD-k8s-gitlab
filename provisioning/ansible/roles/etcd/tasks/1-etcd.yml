@@ -1,0 +1,53 @@
+- name: Etcd install. Download etcd.
+  unarchive:
+    src: https://storage.googleapis.com/etcd/{{ETCD_VER}}/etcd-{{ETCD_VER}}-linux-amd64.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: Etcd install. Check if etcd already running.
+  command: systemctl status etcd
+  failed_when: etcd_run.rc == 2
+  register: etcd_run
+
+- name: Etcd install. Check etcd version.
+  command: etcd --version
+  failed_when: etcd_version.rc == 2
+  when: etcd_run.rc == 0
+  register: etcd_version
+
+- name: Etcd install. Stop etcd if it's run.
+  systemd:
+    state: stopped
+    name: etcd
+  when: etcd_run.rc == 0 and etcd_run.rc != 4
+
+- name: Etcd install. Install binaries.
+  copy:
+    src: /tmp/etcd-v3.5.1-linux-amd64/{{ item }}
+    dest: /usr/bin/{{ item }}
+    force: yes
+    remote_src: yes
+  with_items:
+    - etcd
+    - etcdctl
+    - etcdutl
+
+- name: Etcd install. Configurate etcd cluster.
+  template:
+    src: default-etcd.j2
+    dest: /etc/default/etcd
+    force: yes
+
+- name: Etcd install. Copy simple shell script for access the cluster.
+  copy:
+    src: etcdctl.sh
+    dest: /bin/
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: Etcd install. Restart etcd cluster.
+  systemd:
+    name: etcd
+    state: restarted
+  tags: restart_etcd

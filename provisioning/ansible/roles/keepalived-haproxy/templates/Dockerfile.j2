@@ -1,0 +1,5 @@
+FROM haproxy:{{ haproxy_version }}
+COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
+EXPOSE {{ haproxy_stats_port }}
+EXPOSE {{ haproxy_postgres_master_port }}
+EXPOSE {{ haproxy_postgres_replica_port }}

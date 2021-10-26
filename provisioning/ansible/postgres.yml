@@ -1,0 +1,19 @@
+---
+- name: Set up postgresql
+  hosts: postgres
+  become: yes
+  roles:
+    - { role: ha-postgres, tags: postgres, when: postgres_enabled|default(true) }
+
+- name: HAProxy
+  hosts: haproxy
+  become: yes
+  roles:
+    - { role: keepalived-haproxy, tags: keepalived_haproxy, when: haproxy_enabled|default(true) }
+  vars:
+    haproxy_version: "2.4.7-alpine"
+    haproxy_image: "alexmaron1/haproxy"
+    haproxy_stats_port: "7000"
+    haproxy_postgres_master_port: "15432"
+    haproxy_postgres_replica_port: "25432"
+    vrrp_ipaddress: "192.168.88.111"

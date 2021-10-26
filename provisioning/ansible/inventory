@@ -6,8 +6,8 @@ k8s-node1
 k8s-node2
 k8s-node3
 
-[new_kubernetes_nodes]
-k8s-node5
+#[new_kubernetes_nodes]
+#k8s-node5
 
 [postgres_master]
 k8s-node1
@@ -19,6 +19,10 @@ k8s-node3
 [postgres:children]
 postgres_master
 postgres_standby
+
+[haproxy]
+k8s-master
+k8s-node1
 
 [etcd]
 k8s-node1

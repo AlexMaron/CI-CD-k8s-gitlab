@@ -1,12 +1,11 @@
-- hosts: etcd
+- hosts: etcd[0:2]
 #  serial: 1
 #  order: reverse_sorted
   gather_facts: true
   become: yes
   tasks:
-    - name: test
-      debug:
-        msg: |
-          {% for host in groups['etcd'] %}
-          {{ hostvars[host]['ansible_eth1']['ipv4']['address'] }} {{ host }} {{ host }}
-          {% endfor %}
+  - name: Patroni. Configure patroni.
+    debug:
+      msg: "{{ keepalived_state }}"
+    vars:
+      keepalived_state: "{% if inventory_hostname == groups['etcd'][0] %}MASTER{% else %}BACKUP{% endif %}"

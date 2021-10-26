@@ -1,0 +1,5 @@
+- include: 0-install.yml
+- include: 1-keycloak.yml
+  when: keycloak_enabled|default(false)
+- include: 2-gitlab.yml
+  when: gitlab_enabled|default(false)
