@@ -60,18 +60,6 @@
   roles:
     - { role: kubernetes_nodes_upgrade, when: upgrade_kubernetes_nodes|default(true) }
 
-- name: Set up postgresql
-  hosts: postgres
-  become: yes
-  roles:
-    - { role: postgres, tags: postgres, when: postgres_enabled|default(true) }
-
-#- name: Set up postgres replica server
-#  hosts: postgres_standby
-#  become: yes
-#  roles:
-#    - { role: postgres-standby, tags: postgres_standby, when: postgres_replication_enabled|default(true) }
-
 - name: Set up network storages
   hosts: storage
   tags: storages

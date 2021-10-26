@@ -1,5 +1,6 @@
 ---
 # hostnames and ips
+private_network_adapter: "eth1"
 subnet: "192.168.88."
 master_ip: "{{ subnet }}204"
 node1_ip:  "{{ subnet }}201"
@@ -51,12 +52,14 @@ etcd_node2_ip: "192.168.88.203"
 # postgres
 #postgres_enabled: false
 postgres_version: 12
-postgres_node0_ip: "192.168.88.201"
-postgres_node1_ip: "192.168.88.202"
-postgres_node2_ip: "192.168.88.203"
 postgres_fullversion: 12+214ubuntu0.1
 postgres_replication_enabled: true
 postgres_archive_path: "/srv/archive/postgresql/data"
+postgres_scripts_directory: "/usr/local/bin"
+pg_data: "/var/lib/postgresql/12/main"
+
+# haproxy
+haproxy_version: "2.4.7-alpine"
 
 # kubernetes postgres-operator
 postgres_operator_namespace: postgres-operator

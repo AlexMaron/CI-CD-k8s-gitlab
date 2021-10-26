@@ -4,7 +4,7 @@ ETCD_HOSTNAME=( $( cat /etc/hosts | grep -v "127." | cut -d' ' -f2 | grep ${ETCD
 
 HOST_COUNT=0
 for i in $( seq 1 `cat /etc/hosts | grep ${ETCD_HOSTNAME_PREFIX} | grep -v "127." | wc -l`);do
-  ETCD_HOST_IP=`dig ${ETCD_HOSTNAME[${HOST_COUNT}]} +short`
+  ETCD_HOST_IP=`dig ${ETCD_HOSTNAME[${HOST_COUNT}]} +short | grep -v "127."`
   echo "{\"CN\":\"${ETCD_HOSTNAME[${HOST_COUNT}]}\",\"hosts\":[\"\"],\"key\":{\"algo\":\"rsa\",\"size\":2048}}" | \
   cfssl gencert \
     -ca=/cfssl/etcd-ca.pem \
@@ -18,7 +18,7 @@ done
 
 HOST_COUNT=0
 for i in $( seq 1 `cat /etc/hosts | grep ${ETCD_HOSTNAME_PREFIX} | grep -v "127." | wc -l`);do
-  ETCD_HOST_IP=`dig ${ETCD_HOSTNAME[${HOST_COUNT}]} +short`
+  ETCD_HOST_IP=`dig ${ETCD_HOSTNAME[${HOST_COUNT}]} +short | grep -v "127."`
   echo "{\"CN\":\"${ETCD_HOSTNAME[${HOST_COUNT}]}\",\"hosts\":[\"\"],\"key\":{\"algo\":\"rsa\",\"size\":2048}}" | \
   cfssl gencert \
     -ca=/cfssl/etcd-ca.pem \

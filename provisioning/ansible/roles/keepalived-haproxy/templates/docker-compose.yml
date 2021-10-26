@@ -1,0 +1,8 @@
+---
+services:
+  haproxy:
+    image: {{ haproxy_image }}
+    ports:
+      - "{{ haproxy_stats_port }}:{{ haproxy_stats_port }}"
+      - "{{ haproxy_postgres_master_port }}:{{ haproxy_postgres_master_port }}"
+      - "{{ haproxy_postgres_replica_port }}:{{ haproxy_postgres_replica_port }}"
