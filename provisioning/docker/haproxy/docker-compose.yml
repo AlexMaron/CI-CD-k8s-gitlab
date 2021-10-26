@@ -1,0 +1,8 @@
+---
+services:
+  haproxy:
+    image: alexmaron1/haproxy
+    ports:
+      - "7001:7000"
+      - "15432:15432"
+      - "25432:25432"

@@ -1,4 +1,8 @@
 ---
 # tasks file for etcd
-- include: 0-install.yml
-  tags: etcd-install
+- include: 0-cfssl.yml
+  tags: cfssl
+- include: 1-etcd.yml
+  vars:
+    - ETCD_VER: v3.5.1
+  tags: etcd

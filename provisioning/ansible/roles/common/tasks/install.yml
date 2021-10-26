@@ -1,4 +1,4 @@
-- name: "update packages"
+- name: Common. Update packages.
   apt: update_cache=yes
 
 - name: install additional tools
@@ -9,7 +9,27 @@
   - curl
   - gnupg
   - lsb-release
+  - python3-distutils
   tags: common_install
+
+- name: Common. Download pip3.
+  get_url:
+    url: https://bootstrap.pypa.io/get-pip.py
+    dest: /tmp
+
+- name: Common. Install distutils.
+  apt:
+    name: python3-distutils
+    state: present
+
+- name: Install pip3.
+  command: python3 /tmp/get-pip.py
+
+- name: Install docker compose.
+  pip:
+    name: docker-compose
+    state: present
+    executable: pip3
 
 - name: install chrony
   package: name=chrony state=present
