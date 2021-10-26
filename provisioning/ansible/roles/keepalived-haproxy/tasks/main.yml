@@ -1,0 +1,5 @@
+- include: 1-keepalived.yml
+  tags: keepalived
+
+- include: 0-haproxy.yml
+  tags: haproxy

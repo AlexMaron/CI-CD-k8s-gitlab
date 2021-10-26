@@ -1,0 +1,32 @@
+- name: Keepalived. Create keepalived_script user.
+  user:
+    name: keepalived_script
+    create_home: no
+    shell: /usr/sbin/nologin
+
+- name: Keepalived. Install Keepalived.
+  apt:
+    name: keepalived=1:2.0.19-2
+    state: present
+
+- name: Keepalived. Create config file.
+  template:
+    src: keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+  vars: 
+    keepalived_state: "{% if inventory_hostname == groups['haproxy'][0] %}MASTER{% else %}BACKUP{% endif %}"
+
+- name: Keepalived. Manage linux kernel. Turn on floating ip.
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_nonlocal_bind
+    state: present
+    sysctl_set: yes
+    reload: yes
+    value: 1
+    sysctl_file: /etc/sysctl.conf
+
+- name: Keepalived. Start service.
+  systemd:
+    name: keepalived
+    state: restarted
+    enabled: yes

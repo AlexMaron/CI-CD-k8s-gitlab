@@ -1,0 +1,5 @@
+- name: start_patroni
+  service:
+    name: patroni
+    enabled: yes
+    state: restarted

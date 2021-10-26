@@ -1,0 +1,67 @@
+- name: Patroni. Install patroni with dependencies.
+  pip:
+    name: patroni
+    state: present
+    executable: pip3
+  with_items: 
+    - patroni
+    - psycopg2-binary
+    - python-etcd
+
+- name: Patroni. Archive_command script.
+  template:
+    src: copy_wal.sh.j2
+    dest: "{{ postgres_scripts_directory }}/copy_wal.sh"
+    owner: postgres
+    group: postgres
+    mode: '0700'
+
+- name: Patroni. Restore_command script.
+  template:
+    src: restore_wal.sh.j2
+    dest: "{{ postgres_scripts_directory }}/restore_wal.sh"
+    owner: postgres
+    group: postgres
+    mode: '0700'
+
+- name: Patroni. Configure patroni.
+  template:
+    src: patroni{{ item }}.yml.j2
+    dest: /etc/patroni/config.yml
+    force: yes
+  register: patroni_config
+  when: inventory_hostname == groups['postgres'][item]
+#  failed_when: patroni_config.rc == 1
+  loop: "{{ range(HOST_COUNT) }}"
+  vars:
+    HOST_COUNT: "{{ groups['postgres'] | length }}"
+
+- name: Patroni. Check if pg_data contains files.
+  stat:
+    path: "{{ pg_data }}/postgresql.conf"
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: initdb_started_before
+  failed_when: initdb_started_before.stat.exists
+
+- name: Patroni. Stop and disable postgresql service.
+  systemd:
+    name: postgresql
+    enabled: no
+    state: stopped
+  notify: start_patroni
+
+- name: Patroni. Copy service file to the host.
+  copy:
+    src: patroni.service
+    dest: /lib/systemd/system/patroni.service
+  tags: patroni_start
+
+- name: Patroni. Start service.
+  systemd:
+    name: patroni
+    state: started
+    masked: no
+    daemon_reload: yes
+  tags: patroni_start

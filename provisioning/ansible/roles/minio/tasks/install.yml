@@ -1,3 +1,0 @@
-# Run minio in docker
-- name: Run minio in docker
-  command: docker-compose build

@@ -1,0 +1,17 @@
+ETCD_NAME="{{ ansible_hostname }}"
+ETCD_DATA_DIR="/var/lib/etcd"
+ETCD_LISTEN_PEER_URLS="https://{{ ansible_eth1.ipv4.address }}:2380"
+ETCD_LISTEN_CLIENT_URLS="https://{{ ansible_eth1.ipv4.address }}:2379"
+ETCD_INITIAL_ADVERTISE_PEER_URLS="https://{{ ansible_eth1.ipv4.address }}:2380"
+ETCD_INITIAL_CLUSTER="{{ groups['etcd'][0] }}=https://{% set host0 = groups['etcd'][0] %}{{ hostvars[host0]['ansible_eth1']['ipv4']['address'] }}:2380,{{ groups['etcd'][1] }}=https://{% set host1 = groups['etcd'][1] %}{{ hostvars[host1]['ansible_eth1']['ipv4']['address'] }}:2380,{{ groups['etcd'][2] }}=https://{% set host2 = groups['etcd'][2] %}{{ hostvars[host2]['ansible_eth1']['ipv4']['address'] }}:2380"
+ETCD_INITIAL_CLUSTER_STATE="new"
+ETCD_INITIAL_CLUSTER_TOKEN="AlexMaron Etcd"
+ETCD_ADVERTISE_CLIENT_URLS="https://{{ ansible_eth1.ipv4.address }}:2379"
+ETCD_CLIENT_CERT_AUTH
+ETCD_TRUSTED_CA_FILE="/etc/ssl/certs/etcd-ca.pem"
+ETCD_CERT_FILE="/etc/ssl/certs/{{ ansible_hostname }}.pem"
+ETCD_KEY_FILE="/etc/ssl/certs/{{ ansible_hostname }}-key.pem"
+ETCD_PEER_CLIENT_CERT_AUTH
+ETCD_PEER_TRUSTED_CA_FILE="/etc/ssl/certs/etcd-ca.pem"
+ETCD_PEER_CERT_FILE="/etc/ssl/certs/{{ ansible_hostname }}-peer.pem"
+ETCD_PEER_KEY_FILE="/etc/ssl/certs/{{ ansible_hostname }}-peer-key.pem"

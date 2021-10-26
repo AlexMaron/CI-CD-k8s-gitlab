@@ -1,0 +1,77 @@
+- name: Etcd certificates. Create etcd user.
+  user:
+    name: etcd
+    group: etcd
+    shell: /usr/sbin/nologin
+    create_home: no
+
+- name: Etcd certificates. Download cfss.
+  get_url:
+    url: https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+    dest: /usr/bin/cfssl
+    mode: 0700
+    owner: vagrant
+  delegate_to: "{{ groups['etcd'][0] }}"
+  run_once: true
+
+- name: Etcd certificates. Download cfssjson.
+  get_url:
+    url: https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+    dest: /usr/bin/cfssljson
+    mode: 0700
+    owner: vagrant
+  delegate_to: "{{ groups['etcd'][0] }}"
+  run_once: true
+
+- name: Etcd certificates. Create cfssl directory.
+  file: 
+    path: /cfssl
+    state: directory
+    owner: vagrant
+    group: vagrant
+  delegate_to: "{{ groups['etcd'][0] }}"
+  run_once: true
+
+- name: Etcd certificates. Move cfssl configs.
+  copy: 
+    src: "{{ item }}"
+    dest: "/cfssl/{{ item }}"
+    owner: vagrant
+    group: vagrant
+    mode: '0644'
+  with_items:
+    - ca-config.json
+    - ca-csr.json
+  delegate_to: "{{ groups['etcd'][0] }}"
+  run_once: true
+
+- name: Etcd certificates. Generate CA certificate.
+  shell: cfssl gencert -initca /cfssl/ca-csr.json | cfssljson -bare /cfssl/etcd-ca -
+  delegate_to: "{{ groups['etcd'][0] }}"
+  run_once: true
+
+- name: Etcd certificates. Generate Server certificate.
+  script: generate_certs.sh 
+  environment:
+    ETCD_HOSTNAME_PREFIX: "k8s-node"
+#    ETCD_HOSTNAME_PREFIX: "{{ group_names | regex_search('etcd') }}"
+  delegate_to: "{{ groups['etcd'][0] }}"
+  run_once: true
+
+- name: Etcd certificates. Copy certificates to the etcd workers.
+  synchronize:
+    src: "{{ item }}"
+    dest: /etc/ssl/certs/{{ item | basename }}
+    rsync_opts:
+      - "--chmod=F644"
+      - "--chown=etcd:etcd"
+  with_items:
+    - "/cfssl/etcd-ca.pem"
+    - "/cfssl/{{ inventory_hostname }}-peer.pem"
+    - "/cfssl/{{ inventory_hostname }}-peer-key.pem"
+    - "/cfssl/{{ inventory_hostname }}.pem"
+    - "/cfssl/{{ inventory_hostname }}-key.pem"
+    - "/cfssl/client.pem"
+    - "/cfssl/client-key.pem"
+  delegate_to: "{{ groups['etcd'][0] }}"
+  tags: cfssl_download
