@@ -1,21 +1,33 @@
 - name: HAProxy. Unsures tmp directory exists.
   file:
-    path: /tmp/haproxy
+    path: "{{ haproxy_docker_compose_dir }}"
     state: directory
 
 - name: HAProxy. Copy docker files and configs.
   template:
     src: "{{ item }}"
-    dest: /tmp/haproxy/{{ item | regex_replace('\.j2$', '') }}
+    dest: /srv/docker/haproxy/{{ item | regex_replace('\.j2$', '') }}
     force: yes
   with_items:
     - haproxy.cfg.j2
     - Dockerfile.j2
     - docker-compose.yml
-  tags: test1212
 
 - name: HAPRoxy. Build docker haproxy image.
-  command: docker build -t {{ haproxy_image }} /tmp/haproxy/.
+  command: docker build -t {{ haproxy_image }} {{ haproxy_docker_compose_dir }}/.
+  tags: haproxy_service
 
-- name: HAPROXY. Deploy haproxy with docker-compose.
-  command: docker-compose -f /tmp/haproxy/docker-compose.yml up -d
+- name: HAProxy. Create haproxy docker-compose service.
+  template:
+    src: haproxy-docker.service.j2
+    dest: /etc/systemd/system/haproxy-docker.service
+    owner: root
+    group: root
+    mode: '0711'
+
+- name: HAPRoxy. Start haproxy docker service.
+  systemd:
+    name: haproxy-docker
+    daemon_reload: yes
+    enabled: yes
+    state: started

@@ -1,11 +1,18 @@
-- hosts: etcd[0:2]
+- hosts: kube_control_plane
 #  serial: 1
 #  order: reverse_sorted
   gather_facts: true
   become: yes
   tasks:
-  - name: Patroni. Configure patroni.
-    debug:
-      msg: "{{ keepalived_state }}"
-    vars:
-      keepalived_state: "{% if inventory_hostname == groups['etcd'][0] %}MASTER{% else %}BACKUP{% endif %}"
+  - name: debug
+    shell: "kubectl get namespaces | cut -d' ' -f1 | grep -v \"NAME\""
+    register: existing_namespaces
+
+- name: Alertmanager. Create custom alert rules.
+  template:
+    src: /home/vagrant/provisioning/ansible/roles/prometheus/templates/alertmanager/warn-crit-routes-slack-receivers.yaml.j2
+    dest: "/tmp/prometheus/{{ item }}-warn-crit-routes-slack-receivers.yaml"
+  loop: "{{ existing_namespaces.stdout_lines }}"
+  vars:
+    alertmanagerconfig_namespace: "{{ item }}"
+

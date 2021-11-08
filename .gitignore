@@ -14,3 +14,4 @@ provisioning/ansible/test*
 tmp/postgres-operator
 tmp/prometheus-operator-learning
 tmp/prometheus-prod
+provisioning/gitlab.pass
