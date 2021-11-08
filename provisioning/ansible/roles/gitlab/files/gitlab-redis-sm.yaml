@@ -1,0 +1,19 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gitlab-redis
+  namespace: prometheus
+  labels:
+    app: redis
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: redis
+      release: gitlab
+  namespaceSelector:
+    matchNames:
+      - gitlab
+  endpoints:
+  - port: metrics

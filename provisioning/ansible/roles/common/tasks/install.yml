@@ -10,6 +10,8 @@
   - gnupg
   - lsb-release
   - python3-distutils
+  - python3-dev
+  - libpq-dev
   tags: common_install
 
 - name: Common. Download pip3.
@@ -24,6 +26,11 @@
 
 - name: Install pip3.
   command: python3 /tmp/get-pip.py
+
+- name: Install psycopg2.
+  pip:
+    name: psycopg2
+    executable: pip3
 
 - name: Install docker compose.
   pip:

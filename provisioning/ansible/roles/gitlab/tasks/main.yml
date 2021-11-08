@@ -1,2 +1,4 @@
 ---
 # tasks file for gitlab
+- include: 0-deploy.yml
+  tags: gitlab_deploy

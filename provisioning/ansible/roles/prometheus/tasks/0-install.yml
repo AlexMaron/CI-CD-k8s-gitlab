@@ -10,38 +10,65 @@
     namespace: prometheus
     create_namespace: yes
     update_repo_cache: yes
-    chart_version: 17.2.1
+    chart_version: 19.2.2
     wait: yes
     wait_timeout: 600s
+    force: yes
     values:
+      kubeScheduler:
+        service:
+          port: 10259
+          targetPort: 10259
+        serviceMonitor:
+          https: true
+          insecureSkipVerify: true
+          serverName: kubernetes
+          caFile: "/etc/kubernetes/pki/ca.crt"
+      kubeControllerManager:
+        service:
+          port: 10257
+          targetPort: 10257
+        serviceMonitor:
+          https: true
+          insecureSkipVerify: true
+          serverName: kubernetes
+          caFile: "/etc/kubernetes/pki/ca.crt"
       kubeEtcd:
         service:
-          enabled: true
           port: 2381
           targetPort: 2381
+#        serviceMonitor:
+#          scheme: http
+#          insecureSkipVerify: false
+#          serverName: kubernetes
+#          caFile: /etc/kubernetes/pki/etcd/ca.crt
+#          certFile: /etc/kubernetes/pki/etcd/healthcheck-client.crt
+#          keyFile: /etc/kubernetes/pki/etcd/healthcheck-client.key
       alertmanager:
         service:
           loadBalancerIP: "{{ alertmanager_lb_ip }}"
           type: LoadBalancer
       grafana:
-        adminPassword: "{{ default_password }}"
+        adminPassword: '"{{ default_password }}"'
         ingress: 
           enabled: true
           annotations:
             kubernetes.io/ingress.class: nginx
-            cert-manager.io/cluster-issuer: "letsencrypt-staging"
-            #cert-manager.io/cluster-issuer: "letsencrypt-prod"
+            #cert-manager.io/cluster-issuer: "letsencrypt-staging"
+            cert-manager.io/cluster-issuer: "letsencrypt-prod"
           hosts:
             - grafana.alexmaron.xyz
           tls:
-          - secretName: grafana-tls
-            hosts:
-            - grafana.alexmaron.xyz
+            - secretName: grafana-tls
+              hosts:
+                - grafana.alexmaron.xyz
       prometheus:
         resources:
           requests:
             memory: 400Mi
         prometheusSpec:
+          secrets:
+            - etcd-certs
           storageSpec:
             volumeClaimTemplate:
               spec:
@@ -67,6 +94,7 @@
           releaseNamespace: true
           additional:
           - kube-system
+          - prometheus
           - default
         resources:
           limits:
@@ -75,24 +103,49 @@
           requests:
             cpu: 100m
             memory: 100Mi
+  tags: prometheus_redeploy
 
 - name: Alertmanager. Create alertmanager config.
   template:
     src: pure-alertmanager-conf.yaml.j2
-    dest: /tmp/pure-alertmanager-conf.yaml.j2
-  tags: test444
+    dest: /tmp/pure-alertmanager-conf.yaml
 
 - name: Alertmanager. Encode alertmanager config.
-  command: base64 /tmp/pure-alertmanager-conf.yaml.j2
+  command: base64 /tmp/pure-alertmanager-conf.yaml
   register: alertmanagerconfig_base64
-  tags: test444
 
 - name: Alertmanager. Create prometheus-operator manifest which contains alertmanager config.
   lineinfile:
-    path: /tmp/pure-alertmanager-conf.yaml.j2
+    path: /tmp/pure-alertmanager-conf.yaml
     insertafter: '  alertmanager.yaml: |-'
     line: |4 
         "{{ alertmanagerconfig_base64 }}"
-  tags: test444
 
+- name: Alertmanager. Apply prometheus-operator manifest.
+  command: kubectl apply -f /tmp/pure-alertmanager-conf.yaml
 
+- name: Alertmanager. Get existing namespaces.
+  shell: "kubectl get namespaces | cut -d' ' -f1 | grep -v \"NAME\""
+  register: existing_namespaces
+
+- name: Alertmanager. Create custom alert rules.
+  template:
+    src: alertmanager/warn-crit-routes-slack-receivers.yaml.j2
+    dest: "/tmp/prometheus/{{ item }}-warn-crit-routes-slack-receivers.yaml"
+  loop: "{{ existing_namespaces.stdout_lines }}"
+  vars:
+    alertmanagerconfig_namespace: "{{ item }}"
+
+- name: Rules. Copy rules from tmp directory.
+  copy:
+    src: "{{ item }}"
+    dest: "/tmp/{{ item }}"
+  with_items:
+    - custom-kubernetes-rules.yaml
+    - node-rules.yaml
+
+- name: Rules. Deploy custom prometheus rules.
+  command: "kubectl apply -f /tmp/{{ item }}"
+  with_items:
+    - custom-kubernetes-rules.yaml
+    - node-rules.yaml

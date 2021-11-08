@@ -12,9 +12,9 @@ spec:
     - name: severity
       value: (critical|warning)
       regex: true
-    - name: alertname
-      value: Kube.*
-      regex: true
+#    - name: alertname
+#      value: Kube.*
+#      regex: true
     receiver: slack
     repeatInterval: 12h 
   receivers:
@@ -25,6 +25,7 @@ spec:
         name: prometheus-slack-kubernetes
       channel: '{{ slack_channel }}'
       username: '{{ slack_username }}'
+{% raw %}
       color: '#2eb886'
       title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] Monitoring Event Notification' 
       text: |-
@@ -36,11 +37,12 @@ spec:
             {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
             {{ end }}
           {{ end }}
+{% endraw %}
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: prometheus-slack-kubernetes
-  namespace: cert-manager
+  namespace: {{ alertmanagerconfig_namespace }}
 stringData:
   slack-webhook: "{{ slack_webhook }}"

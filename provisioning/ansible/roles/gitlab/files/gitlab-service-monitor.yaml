@@ -1,0 +1,20 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gitlab
+  namespace: prometheus
+  labels:
+    app: webservice
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: webservice
+      release: gitlab
+  namespaceSelector:
+    matchNames:
+      - gitlab
+  endpoints:
+  - port: http-workhorse
+    path: /-/metrics
