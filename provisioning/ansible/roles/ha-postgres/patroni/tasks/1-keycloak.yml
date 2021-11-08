@@ -9,21 +9,27 @@
 
 - name: create keycloak database user
   postgresql_user:
-    login_host: "{{ haproxy_ip }}"
+    login_host: "{{ vrrp_ipaddress }}"
     login_user: postgres
     login_password: "{{ default_password }}"
+    port: "{{ haproxy_postgres_master_port }}"
     name: "{{ keycloak_db_user }}"
     password: "{{ default_password }}"
     role_attr_flags: CREATEDB,NOSUPERUSER
   loop: "{{ patroni_master_check.results }}"
+  delegate_to: groups['kube_control_plane'][0]
+  run_once: yes
   when: item.status == 200
 
 - name: create keycloak database
   postgresql_db:
-    login_host: "{{ haproxy_ip }}"
+    login_host: "{{ vrrp_ipaddress }}"
     login_user: postgres
     login_password: "{{ default_password }}"
+    port: "{{ haproxy_postgres_master_port }}"
     name: "{{ keycloak_db }}"
     owner: "{{ keycloak_db_user }}"
   loop: "{{ patroni_master_check.results }}"
+  delegate_to: groups['kube_control_plane'][0]
+  run_once: yes
   when: item.status == 200

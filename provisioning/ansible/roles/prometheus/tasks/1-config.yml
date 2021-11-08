@@ -1,34 +1,8 @@
-- name: Prometheus config. Open kubebernetes controller-manager on 0.0.0.0:10252
-  replace:
-    path: /etc/kubernetes/manifests/kube-controller-manager.yaml
-    regexp: '    - --port=.*'
-    replace: '    - --port=10252'
-
-- name: Prometheus config. Add controller secure port.
-  lineinfile:
-   path: /etc/kubernetes/manifests/kube-controller-manager.yaml
-   insertafter: '    - --port=10252'
-   regexp: '    - --secure-port=.*'
-   line: '    - --secure-port=10257'
-
 - name: Prometheus config. Change kubernetes scheduler listen address.
   replace:
     path: /etc/kubernetes/manifests/kube-scheduler.yaml
     regexp: '    - --bind-address=.*'
-    replace: '    - --bind-address=0.0.0.0'
-
-- name: Prometheus config. Change kubernetes scheduler port.
-  replace:
-    path: /etc/kubernetes/manifests/kube-scheduler.yaml
-    regexp: '    - --port=.*'
-    replace: '    - --port=10251'
-
-- name: Prometheus config. Add kubernetes scheduler secure port.
-  lineinfile: 
-    path: /etc/kubernetes/manifests/kube-scheduler.yaml
-    insertafter: '    - --port=.*'
-    regexp: '    - --secure-port=.*'
-    line: '    - --secure-port=10259'
+    replace: "    - --bind-address={{ groups['kube_control_plane'][0] }}"
 
 - name: Prometheus config. Change kubernetes kube proxy listen address.
   shell:
@@ -37,9 +11,8 @@
         sed -i 's/.*metricsBindAddress.*/    metricsBindAddress: \"0.0.0.0:10249\"/' /tmp/kube-proxy-cm.yml && \
         kubectl apply -f /tmp/kube-proxy-cm.yml
 
-- name: Prometheus config. Expose kubernetes etcd metrics for "{{ master_ip }}"
+- name: Prometheus config. Expose kubernetes etcd metrics for "{{ groups['kube_control_plane'][0] }}"
   replace:
     path: /etc/kubernetes/manifests/etcd.yaml
     regexp: '    - --listen-metrics-urls=.*'
-    replace: '    - --listen-metrics-urls=http://127.0.0.1:2381,http://{{ master_ip }}:2381'
-
+    replace: "    - --listen-metrics-urls=http://127.0.0.1:2381,http://{{ groups['kube_control_plane'][0] }}:2381"

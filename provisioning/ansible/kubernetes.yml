@@ -1,8 +1,8 @@
 ---
 - name: Pre-installation additional tools.
   hosts: all
-  #  tags:
-  #    - pure_kubernetes_install
+  tags:
+    - pure_kubernetes_install
   become: yes
   roles:
     - { role: common, tags: common }
@@ -79,3 +79,4 @@
     - { role: ingress-nginx, tags: ingress-nginx, when: ingress_nginx_enabled|default(true) }
     - { role: keycloak, tags: keycloak, when: keycloak_enabled|default(true) }
     - { role: efk, tags: efk, when: efk_enabled|default(true) }
+    - { role: gitlab, tags: gitlab, when: gitlab_enabled|default(true) }

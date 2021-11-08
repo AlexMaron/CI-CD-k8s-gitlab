@@ -8,10 +8,10 @@ require "fileutils"
 #VAGRANT_DISKS_DIRECTORY   = "disks"
 #VAGRANT_CONTROLLER_NAME   = "Virtual I/O SCSI controller"
 #VAGRANT_CONFTROLLER_TYPE  = "virtio-scsi"
-MEMORY		        	  = 4096
-CPUS			          = 3
-CPU_UTILIZATION	    	  = 50
-ADDITIONAL_DISKS    	  = 2
+MEMORY		        	      = 4618
+CPUS                      = 3
+CPU_UTILIZATION           = 50
+ADDITIONAL_DISKS    	    = 2
 DISK_SIZE                 = 8192
 SUBNET                    = "192.168.88."
 BOX                       = "bento/ubuntu-20.04"
@@ -49,14 +49,14 @@ BOX                       = "bento/ubuntu-20.04"
       :ip => "#{SUBNET}203",
       :ssh_port => '2213',
       :persistent_data => "~/vagrant/persistent_disk/k8s-node3.vdi",
-    },
-    {
-      :hostname => "k8s-node5",
-      :box => BOX,
-      :ip => "#{SUBNET}205",
-      :ssh_port => '2215',
-      :persistent_data => "~/vagrant/persistent_disk/k8s-node5.vdi",
     }
+#    {
+#      :hostname => "k8s-node5",
+#      :box => BOX,
+#      :ip => "#{SUBNET}205",
+#      :ssh_port => '2215',
+#      :persistent_data => "~/vagrant/persistent_disk/k8s-node5.vdi",
+#    }
   ]
 
 Vagrant.configure("2") do |config|

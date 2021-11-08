@@ -21,8 +21,8 @@ username_gid: vagrant
 home_env: '/home/{{ username_env }}'
 
 kubernetes_repo: "kubernetes-xenial main"
-short_kubernetes_version: 1.21
-default_kubernetes_version: 1.21.2-00
+short_kubernetes_version: 1.22
+default_kubernetes_version: 1.22.2-00
 default_kubernetes_cni_version: 0.8.7-00
 
 # chrony
@@ -59,7 +59,10 @@ postgres_scripts_directory: "/usr/local/bin"
 pg_data: "/var/lib/postgresql/12/main"
 
 # haproxy
-haproxy_version: "2.4.7-alpine"
+haproxy_docker_compose_dir: "/srv/docker/haproxy"
+vrrp_ipaddress: "192.168.88.111"
+haproxy_postgres_master_port: "15432"
+haproxy_postgres_replica_port: "25432"
 
 # kubernetes postgres-operator
 postgres_operator_namespace: postgres-operator
