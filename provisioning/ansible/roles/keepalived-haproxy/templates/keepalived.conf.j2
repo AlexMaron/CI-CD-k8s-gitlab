@@ -1,7 +1,7 @@
 global_defs {
 }
 vrrp_script chk_haproxy { # Requires keepalived-1.1.13
-    script "/usr/bin/killall -0 haproxy" # widely used idiom
+    script "/usr/bin/pidof haproxy" # widely used idiom
     interval 2 # check every 2 seconds
     weight 2 # add 2 points of prio if OK
 }

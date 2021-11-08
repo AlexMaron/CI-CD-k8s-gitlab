@@ -9,38 +9,55 @@
 
 - name: Postgresql. Create gitlab database user.
   postgresql_user:
-    login_host: "{{ haproxy_ip }}"
+    login_host: "{{ vrrp_ipaddress }}"
     login_user: postgres
     login_password: "{{ default_password }}"
+    port: "{{ haproxy_postgres_master_port }}"
     name: "{{ gitlab_db_user }}"
     password: "{{ default_password }}"
     role_attr_flags: CREATEDB,NOSUPERUSER
   loop: "{{ patroni_master_check.results }}"
+  delegate_to: "{{ groups['kube_control_plane'][0] }}"
+  run_once: yes
   when: item.status == 200
-
 
 - name: Postgresql. Create gitlab database.
   postgresql_db:
-    login_host: "{{ haproxy_ip }}"
+    login_host: "{{ vrrp_ipaddress }}"
     login_user: postgres
     login_password: "{{ default_password }}"
-    name: "{{ gitlab_db }}"
+    login_port: "{{ haproxy_postgres_master_port }}"
+    db: "{{ gitlab_db }}"
     owner: "{{ gitlab_db_user }}"
   loop: "{{ patroni_master_check.results }}"
+  delegate_to: "{{ groups['kube_control_plane'][0] }}"
+  run_once: yes
   when: item.status == 200
-
 
 - name: Postgresql. Create postgresql extentions for gitlab.
   postgresql_ext:
-    name: "{{ item }}"
+    name: btree_gist
     db: "{{ gitlab_db }}"
-    login_host: "{{ groups['postgres_master'][0] }}"
+    login_host: "{{ vrrp_ipaddress }}"
     login_user: postgres
     login_password: "{{ default_password }}"
-  with_items:
-    - btree_gist
-    - pg_trgm
+    port: "{{ haproxy_postgres_master_port }}"
   loop: "{{ patroni_master_check.results }}"
+  delegate_to: "{{ groups['kube_control_plane'][0] }}"
   when: item.status == 200
+  run_once: yes
   tags: gitlab_extensions
 
+- name: Postgresql. Create postgresql extentions for gitlab.
+  postgresql_ext:
+    name: pg_trgm
+    db: "{{ gitlab_db }}"
+    login_host: "{{ vrrp_ipaddress }}"
+    login_user: postgres
+    login_password: "{{ default_password }}"
+    port: "{{ haproxy_postgres_master_port }}"
+  loop: "{{ patroni_master_check.results }}"
+  delegate_to: "{{ groups['kube_control_plane'][0] }}"
+  when: item.status == 200
+  run_once: yes
+  tags: gitlab_extensions

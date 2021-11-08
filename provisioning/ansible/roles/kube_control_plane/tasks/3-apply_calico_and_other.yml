@@ -1,7 +1,19 @@
-- name: Deploy Calico CNI.
-  command: "{{ item }}"
+- name: Download Calico manifest.
+  get_url:
+    url: "{{ kubernetes_calico_manifest_file }}"
+    dest: /tmp/calico.yaml
+
+- name: Change autodetection section in Calico manifest.
+  lineinfile:
+    path: /tmp/calico.yaml
+    insertafter: '.*value: "autodetect"'
+    line: "{{ item }}"
   with_items:
-    - kubectl apply -f {{ kubernetes_calico_manifest_file }}
+    - '              value: "interface=eth1"'
+    - '            - name: IP_AUTODETECTION_METHOD'
+
+- name: Deploy Calico CNI.
+  command: kubectl apply -f /tmp/calico.yaml
   tags:
     - calico_install
     - upgrade_cluster_components

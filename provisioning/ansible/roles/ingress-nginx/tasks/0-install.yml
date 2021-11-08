@@ -12,16 +12,21 @@
     namespace: ingress-nginx
     create_namespace: yes
     update_repo_cache: yes
+    force: yes
     values:
-      hostNetwork: true
-      hostPort:
-        enabled: true
-      kind: DaemonSet
-      toleration:
+      controller:
+        kind: DaemonSet
+        hostNetwork: true
+        hostPort:
+          enabled: true
+        toleration:
         - key: "node-role.kubernetes.io/master"
           operator: "Exist"
           effect: "NoSchedule"
-      controller:
+#        tcp:
+#          configMapNamespace: "$(POD_NAMESPACE)/tcp-services"
+#        udp:
+#          configMapNamespace: "$(POD_NAMESPACE)/udp-services"
         metrics:
           enabled: true
           serviceMonitor:
@@ -29,5 +34,8 @@
             enabled: true
             additionalLabels:
               release: prometheus
+      tcp:
+        22: "gitlab/gitlab-gitlab-shell:22"
   tags:
+    - ingress_nginx_deploy
     - upgrade_cluster_components
