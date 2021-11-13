@@ -25,8 +25,8 @@ Warning: Ansible playbooks support only Ubuntu 20.04.
 2. Run ansible playbook.
 
 ## <a name="secrets">Secret Variables</a>  
-- default_password: "examplePass"  
-- email: "exampleEmail"  
+- default_password: ""  
+- email: ""  
 #### prometheus-operator
 - alertmanagerconfig_namespace: ""  
 - smtp_auth_password: ""  
