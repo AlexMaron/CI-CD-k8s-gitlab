@@ -16,10 +16,9 @@ Warning: Ansible playbooks support only Ubuntu 20.04.
 - Configure Ansible variables for roles. Path: ./provisioning/ansible/kubernetes.yml
 - If you are using ansible-vault secrest
 
-<a name="secrets">Secret Variables</a>
+## <a name="secrets">Secret Variables</a>  
 default_password: "13011988"  
 email: "jeronimo8008@gmail.com"  
-
 #### prometheus-operator
 alertmanagerconfig_namespace: ""  
 smtp_auth_password: ""  
