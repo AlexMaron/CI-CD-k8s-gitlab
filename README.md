@@ -12,11 +12,11 @@ This repo writing for learning purpose: virtualization technology, Ansible, Kube
 Warning: Ansible playbooks support only Ubuntu 20.04.
 - Configure Vagrantfile for your purposes. (Ansible playbooks writes for using only Ubuntu v20.04, with other distributions it's will not work.)
 - Configure Ansible inventory file using hostnames of created hosts.
-- Configure Ansible variables. Default variables path: ./provisioning/ansible/group_vars/all/all.yml (Also this directory contains encrypted by ansible-vault file "secret.yml". If you want start playbook without secret you are needed to define following variables[pookie link](#pookie) )
+- Configure Ansible variables. Default variables path: ./provisioning/ansible/group_vars/all/all.yml (Also this directory contains encrypted by ansible-vault file "secret.yml". If you want start playbook without secret you are needed to define [following variables](#secrets) )
 - Configure Ansible variables for roles. Path: ./provisioning/ansible/kubernetes.yml
 - If you are using ansible-vault secrest
 
-<a name="pookie">Secret Variables</a>
+<a name="secrets">Secret Variables</a>
 default_password: "examplePass"  
 email: "jeronimo8008@gmail.com"  
 
