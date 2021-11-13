@@ -8,9 +8,8 @@ require "fileutils"
 #VAGRANT_DISKS_DIRECTORY   = "disks"
 #VAGRANT_CONTROLLER_NAME   = "Virtual I/O SCSI controller"
 #VAGRANT_CONFTROLLER_TYPE  = "virtio-scsi"
-MEMORY		        	      = 4618
-CPUS                      = 3
-CPU_UTILIZATION           = 50
+MEMORY		        	      = 5632
+CPUS                      = 2
 ADDITIONAL_DISKS    	    = 2
 DISK_SIZE                 = 8192
 SUBNET                    = "192.168.88."
@@ -21,14 +20,8 @@ BOX                       = "bento/ubuntu-20.04"
   #  { :filename => "disk2", :size => DISK_SIZE, :port => 2}
   #]
 
+
   servers=[
-    {
-      :hostname => "k8s-master",
-      :box => BOX,
-      :ip => "#{SUBNET}204",
-      :ssh_port => '2210',
-      :persistent_data => "~/vagrant/persistent_disk/k8s-master.vdi",
-    },
     {
       :hostname => "k8s-node1",
       :box => BOX,
@@ -61,7 +54,16 @@ BOX                       = "bento/ubuntu-20.04"
 
 Vagrant.configure("2") do |config|
 
-  #disks_directory = File.join(VAGRANT_ROOT, VAGRANT_DISKS_DIRECTORY)
+  config.vm.define "k8s-master" do |master|
+    master.vm.box = BOX
+    master.vm.hostname = "k8s-master"
+    master.vm.network :public_network, ip: "#{SUBNET}204"
+    master.vm.network "forwarded_port", guest: 22, host: 2210
+    master.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", 4096, "--cpus", 2]
+      v.customize ["modifyvm", :id, "--name", "k8s-master"]
+    end
+  end
 
   servers.each do |machine|
 
