@@ -17,8 +17,8 @@ This repo writing for learning purpose: virtualization technology, Ansible, Kube
 #### Kubernetes
 Warning: Ansible playbooks support only Ubuntu 20.04.
 Steps for run ansible playbook
-2. Configure Ansible variables for roles. Path: ./provisioning/ansible/kubernetes.yml
-3. Run ansible playbook kubernetes.yml.
+1. Configure Ansible variables for roles. Path: ./provisioning/ansible/kubernetes.yml
+2. Run ansible playbook kubernetes.yml.
 #### Postgresql
 Warning: Ansible playbooks support only Ubuntu 20.04.
 1. Configure Ansible variables for roles. Path: ./provisioning/ansible/postgresql.yml
