@@ -1,1 +1,0 @@
-kubeadm join 10.8.8.11:6443 --token vgsr20.eozdfxhlqst4mwqq --discovery-token-ca-cert-hash sha256:9117297a65ed53d279cbca29e5f369a6f7e90c695a033f0bb690c7794ed7b216 
