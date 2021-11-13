@@ -1,4 +1,0 @@
----
-# vars file for common
-vars:
-  docker_release: stable
