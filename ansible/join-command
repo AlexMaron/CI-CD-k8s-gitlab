@@ -1,1 +1,0 @@
-kubeadm join 10.8.8.11:6443 --token yqfyga.18h88nlbblcuspjs --discovery-token-ca-cert-hash sha256:5b3d4df31046cad5ad145bd5e3c0e2ee15bb1422934fd59e5b80cf959a09d9f7 
