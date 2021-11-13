@@ -1,7 +1,0 @@
-#!/bin/bash
-kubernetes_ver=$(kubectl version --client --short | grep -o '[0-9.]\+') | sed 's/..$//'
-
-cat << EOF
-{ "kubernetes_version": "$kubernetes_ver"
-}
-EOF
