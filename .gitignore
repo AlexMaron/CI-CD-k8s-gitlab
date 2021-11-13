@@ -1,3 +1,5 @@
+*.bak
+*.test
 provisioning/ansible_tests
 ssh_key/id_rsa
 ssh_key/id_rsa.pub
