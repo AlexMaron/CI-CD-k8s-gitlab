@@ -19,5 +19,5 @@ tmp/prometheus-operator-learning
 tmp/prometheus-prod
 provisioning/gitlab.pass
 udemi
-bfg-1.14.0.jar
+bfg*.jar
 replacement.txt
